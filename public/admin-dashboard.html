@@ -419,13 +419,15 @@
 
     </div>
 
+    <script src="/config.js"></script>
     <script>
 
         let history = [];
 
         /* 🔑 SUPABASE SETUP */
-        const SUPABASE_URL = "https://obtagynscjhnihcslhns.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_AWEJbRPrIDWrNiG298HTlg_qMserpgr";
+        const config = window.SUPABASE_CONFIG || {};
+        const SUPABASE_URL = config.url || '';
+        const SUPABASE_KEY = config.key || '';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const markSelected = (options, val) => {

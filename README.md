@@ -190,8 +190,9 @@ To access the Admin dashboard:
 ### Step 7: Update Credentials
 Update the credentials in your local files to connect to your Supabase project:
 1. Edit the `.env` file in the project folder and replace `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` with your project's URL and Key.
-2. The HTML files in `public/` directory have already been configured to read from this project.
-   
+2. Run `npm run build` to generate `public/config.js` from your environment variables.
+3. The HTML files in `public/` directory are configured to read from `public/config.js` at runtime.
+
 Tip: copy the example environment file and edit it:
 
 ```bash

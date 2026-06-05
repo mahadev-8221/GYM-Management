@@ -4,7 +4,8 @@
   "description": "Backend server for PowerFit Gym frontend",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "build": "node scripts/generateConfig.js",
+    "start": "npm run build && node app.js"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
