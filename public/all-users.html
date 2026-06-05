@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Users — PowerFit Gym</title>
+  <meta name="description" content="View all PowerFit Gym users including members, trainers, and administrators.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body {
+      min-height: 100vh;
+      background: var(--bg-primary);
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(10,10,15,0.95), rgba(10,10,15,0.88)),
+        url('a-black-and-white-of-a-gym-photo.jpg') no-repeat center/cover;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      top: -150px; right: -150px;
+      animation: floatBg 15s ease-in-out infinite;
+      z-index: 0;
+    }
+
+    .page-wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 100px 24px 60px;
+    }
+
+    /* Top bar */
+    .top-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 64px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 5%;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      animation: fadeInDown 0.5s ease;
+    }
+    .top-bar .logo {
+      font-size: 20px; font-weight: 800; color: var(--text-primary);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .top-bar .logo .accent { color: var(--accent); }
+    .top-bar a.back-link {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 500; color: var(--text-muted);
+      padding: 7px 14px;
+      background: var(--bg-glass); border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      transition: all var(--transition);
+    }
+    .top-bar a.back-link:hover {
+      color: var(--text-primary); background: var(--bg-glass-hover);
+    }
+
+    /* Page title */
+    .page-title {
+      text-align: center; margin-bottom: 36px; animation: fadeInUp 0.6s ease;
+    }
+    .page-title h1 {
+      font-size: 36px; font-weight: 800; letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #fff, #ccc);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .page-title p { font-size: 15px; color: var(--text-muted); margin-top: 8px; }
+
+    /* Stats row */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px; margin-bottom: 32px; animation: fadeInUp 0.7s ease;
+    }
+    .stat-card {
+      background: var(--bg-glass); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 18px 20px; text-align: center;
+      transition: all var(--transition);
+    }
+    .stat-card:hover { background: var(--bg-glass-hover); border-color: var(--border-hover); transform: translateY(-2px); }
+    .stat-card .stat-num { font-size: 28px; font-weight: 800; color: var(--text-primary); }
+    .stat-card .stat-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-top: 4px; }
+    .stat-card.admin-stat .stat-num { color: var(--purple); }
+    .stat-card.trainer-stat .stat-num { color: var(--accent); }
+    .stat-card.member-stat .stat-num { color: var(--green); }
+    .stat-card.total-stat .stat-num { color: var(--blue); }
+
+    /* Controls */
+    .controls {
+      display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap;
+      animation: fadeInUp 0.8s ease;
+    }
+    .search-box {
+      flex: 1; min-width: 220px; position: relative;
+    }
+    .search-box input {
+      width: 100%; padding: 12px 16px 12px 42px;
+      background: var(--bg-glass); border: 1px solid var(--border);
+      border-radius: var(--radius-md); color: var(--text-primary);
+      font-family: 'Inter', sans-serif; font-size: 14px;
+      outline: none; transition: all var(--transition);
+    }
+    .search-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .search-box input::placeholder { color: var(--text-muted); }
+    .search-box i {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); font-size: 14px;
+    }
+    .filter-btns { display: flex; gap: 6px; }
+    .filter-btn {
+      padding: 10px 18px; background: var(--bg-glass); border: 1px solid var(--border);
+      border-radius: var(--radius-full); color: var(--text-secondary);
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all var(--transition);
+    }
+    .filter-btn:hover { background: var(--bg-glass-hover); color: var(--text-primary); }
+    .filter-btn.active {
+      background: var(--accent-glow); color: var(--accent-light);
+      border-color: rgba(255,77,28,0.3);
+    }
+
+    /* Role sections */
+    .role-section {
+      margin-bottom: 36px; animation: fadeInUp 0.5s ease;
+    }
+    .role-section.hidden { display: none; }
+    .role-header {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+      padding-bottom: 10px; border-bottom: 1px solid var(--border);
+    }
+    .role-header .role-icon {
+      width: 36px; height: 36px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center; font-size: 16px;
+    }
+    .role-header .role-icon.admin-icon { background: rgba(168,85,247,0.2); color: var(--purple); }
+    .role-header .role-icon.trainer-icon { background: var(--accent-glow); color: var(--accent); }
+    .role-header .role-icon.member-icon { background: var(--green-glow); color: var(--green); }
+    .role-header h2 { font-size: 18px; font-weight: 700; }
+    .role-header .count {
+      padding: 3px 10px; border-radius: var(--radius-full);
+      font-size: 12px; font-weight: 600; background: var(--bg-glass); color: var(--text-muted);
+    }
+
+    /* User cards grid */
+    .users-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;
+    }
+    .user-card {
+      background: var(--bg-card); backdrop-filter: blur(16px);
+      border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 20px; display: flex; align-items: center; gap: 14px;
+      transition: all var(--transition); cursor: default;
+    }
+    .user-card:hover { border-color: var(--border-hover); background: var(--bg-glass-hover); transform: translateY(-2px); }
+    .user-card.search-hidden { display: none; }
+
+    .user-avatar {
+      width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700; color: #fff; overflow: hidden;
+    }
+    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .user-avatar.admin-av { background: linear-gradient(135deg, #a855f7, #7c3aed); }
+    .user-avatar.trainer-av { background: var(--accent-gradient); }
+    .user-avatar.member-av { background: linear-gradient(135deg, #22c55e, #16a34a); }
+
+    .user-info { flex: 1; min-width: 0; }
+    .user-info .name {
+      font-size: 15px; font-weight: 600; color: var(--text-primary);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .user-info .email {
+      font-size: 12px; color: var(--text-muted); margin-top: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .user-info .meta {
+      display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap;
+    }
+    .role-badge {
+      padding: 2px 8px; border-radius: var(--radius-full);
+      font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .role-badge.admin { background: rgba(168,85,247,0.2); color: #c084fc; }
+    .role-badge.trainer { background: var(--accent-glow); color: var(--accent-light); }
+    .role-badge.member { background: var(--green-glow); color: var(--green); }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    }
+    .status-dot.active { background: var(--green); box-shadow: 0 0 6px var(--green-glow); }
+    .status-dot.pending { background: var(--yellow); box-shadow: 0 0 6px var(--yellow-glow); }
+    .status-text { font-size: 11px; color: var(--text-muted); }
+
+    /* Loading */
+    .loading {
+      text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 15px;
+    }
+    .loading i { font-size: 28px; color: var(--accent); display: block; margin-bottom: 12px; animation: pulse 1.5s infinite; }
+
+    .empty-state {
+      text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px;
+    }
+
+    @media(max-width:768px) {
+      .page-wrapper { padding: 80px 16px 40px; }
+      .page-title h1 { font-size: 26px; }
+      .users-grid { grid-template-columns: 1fr; }
+      .filter-btns { width: 100%; overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="logo">
+      <i class="fas fa-dumbbell" style="color:var(--accent)"></i>
+      Power<span class="accent">Fit</span>
+    </div>
+    <a href="admin-dashboard.html" class="back-link"><i class="fas fa-arrow-left"></i> Dashboard</a>
+  </div>
+
+  <div class="page-wrapper">
+
+    <!-- TITLE -->
+    <div class="page-title">
+      <h1><i class="fas fa-users" style="margin-right:10px"></i>All Users</h1>
+      <p>Complete list of admins, trainers, and members in the system</p>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card total-stat"><div class="stat-num" id="totalCount">—</div><div class="stat-label">Total Users</div></div>
+      <div class="stat-card admin-stat"><div class="stat-num" id="adminCount">—</div><div class="stat-label">Admins</div></div>
+      <div class="stat-card trainer-stat"><div class="stat-num" id="trainerCount">—</div><div class="stat-label">Trainers</div></div>
+      <div class="stat-card member-stat"><div class="stat-num" id="memberCount">—</div><div class="stat-label">Members</div></div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Search by name, email, or phone..." oninput="filterUsers()">
+      </div>
+      <div class="filter-btns">
+        <button class="filter-btn active" data-role="all" onclick="setFilter('all', this)">All</button>
+        <button class="filter-btn" data-role="admin" onclick="setFilter('admin', this)">Admins</button>
+        <button class="filter-btn" data-role="trainer" onclick="setFilter('trainer', this)">Trainers</button>
+        <button class="filter-btn" data-role="member" onclick="setFilter('member', this)">Members</button>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading" id="loadingState">
+      <i class="fas fa-spinner fa-spin"></i>
+      Loading users...
+    </div>
+
+    <!-- USER SECTIONS -->
+    <div id="userSections"></div>
+
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://obtagynscjhnihcslhns.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_AWEJbRPrIDWrNiG298HTlg_qMserpgr";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let allUsers = [];
+    let currentFilter = 'all';
+
+    async function loadAllUsers() {
+      const { data, error } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .order('role', { ascending: true })
+        .order('full_name', { ascending: true });
+
+      document.getElementById('loadingState').style.display = 'none';
+
+      if (error) {
+        document.getElementById('userSections').innerHTML =
+          '<div class="empty-state"><i class="fas fa-exclamation-triangle" style="font-size:24px;color:var(--red);display:block;margin-bottom:10px"></i>Error loading users: ' + error.message + '</div>';
+        return;
+      }
+
+      allUsers = data || [];
+
+      // Update stats
+      const admins = allUsers.filter(u => u.role === 'admin');
+      const trainers = allUsers.filter(u => u.role === 'trainer');
+      const members = allUsers.filter(u => u.role === 'member');
+
+      document.getElementById('totalCount').textContent = allUsers.length;
+      document.getElementById('adminCount').textContent = admins.length;
+      document.getElementById('trainerCount').textContent = trainers.length;
+      document.getElementById('memberCount').textContent = members.length;
+
+      renderUsers(admins, trainers, members);
+    }
+
+    function getInitials(name) {
+      if (!name) return '?';
+      return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    }
+
+    function buildCard(user) {
+      const role = user.role || 'member';
+      const avClass = role === 'admin' ? 'admin-av' : role === 'trainer' ? 'trainer-av' : 'member-av';
+      const statusClass = (user.status || '').toLowerCase() === 'active' ? 'active' : 'pending';
+      const statusLabel = user.status || 'Pending';
+      const phone = user.phone ? `<span style="font-size:11px;color:var(--text-muted)"><i class="fas fa-phone" style="font-size:9px;margin-right:3px"></i>${user.phone}</span>` : '';
+      const email = user.email || '';
+      const avatarContent = user.photo_url
+        ? `<img src="${user.photo_url}" alt="${user.full_name}">`
+        : getInitials(user.full_name);
+
+      return `
+        <div class="user-card" data-role="${role}" data-name="${(user.full_name || '').toLowerCase()}" data-email="${email.toLowerCase()}" data-phone="${user.phone || ''}">
+          <div class="user-avatar ${avClass}">${avatarContent}</div>
+          <div class="user-info">
+            <div class="name">${user.full_name || 'Unknown'}</div>
+            <div class="email">${email || 'No email'}</div>
+            <div class="meta">
+              <span class="role-badge ${role}">${role}</span>
+              <span class="status-dot ${statusClass}"></span>
+              <span class="status-text">${statusLabel}</span>
+              ${phone}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function renderUsers(admins, trainers, members) {
+      let html = '';
+
+      if (admins.length > 0) {
+        html += `<div class="role-section" data-section="admin">
+          <div class="role-header">
+            <div class="role-icon admin-icon"><i class="fas fa-user-shield"></i></div>
+            <h2>Administrators</h2>
+            <span class="count">${admins.length}</span>
+          </div>
+          <div class="users-grid">${admins.map(buildCard).join('')}</div>
+        </div>`;
+      }
+
+      if (trainers.length > 0) {
+        html += `<div class="role-section" data-section="trainer">
+          <div class="role-header">
+            <div class="role-icon trainer-icon"><i class="fas fa-dumbbell"></i></div>
+            <h2>Trainers</h2>
+            <span class="count">${trainers.length}</span>
+          </div>
+          <div class="users-grid">${trainers.map(buildCard).join('')}</div>
+        </div>`;
+      }
+
+      if (members.length > 0) {
+        html += `<div class="role-section" data-section="member">
+          <div class="role-header">
+            <div class="role-icon member-icon"><i class="fas fa-user"></i></div>
+            <h2>Members</h2>
+            <span class="count">${members.length}</span>
+          </div>
+          <div class="users-grid">${members.map(buildCard).join('')}</div>
+        </div>`;
+      }
+
+      if (!html) {
+        html = '<div class="empty-state"><i class="fas fa-user-slash" style="font-size:24px;display:block;margin-bottom:10px"></i>No users found in the system.</div>';
+      }
+
+      document.getElementById('userSections').innerHTML = html;
+      applyFilters();
+    }
+
+    function setFilter(role, btn) {
+      currentFilter = role;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilters();
+    }
+
+    function filterUsers() {
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+
+      // Show/hide sections
+      document.querySelectorAll('.role-section').forEach(sec => {
+        const section = sec.getAttribute('data-section');
+        if (currentFilter === 'all' || currentFilter === section) {
+          sec.classList.remove('hidden');
+        } else {
+          sec.classList.add('hidden');
+        }
+      });
+
+      // Search within visible cards
+      document.querySelectorAll('.user-card').forEach(card => {
+        const name = card.getAttribute('data-name');
+        const email = card.getAttribute('data-email');
+        const phone = card.getAttribute('data-phone');
+        const matches = !query || name.includes(query) || email.includes(query) || phone.includes(query);
+        card.classList.toggle('search-hidden', !matches);
+      });
+    }
+
+    loadAllUsers();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Member Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        /* BACKGROUND */
+        body {
+            margin: 0;
+            font-family: Arial;
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: url("https://images.unsplash.com/photo-1571902943202-507ec2618e8f") no-repeat center center/cover;
+            background-size: cover;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .sidebar button {
+            width: 100%;
+            padding: 12px;
+            margin: 6px 0;
+            background: #222;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .sidebar button:hover {
+            background: #ff9800;
+        }
+
+        /* MAIN */
+        .main {
+            flex: 1;
+            width: 100%;
+            padding: 20px;
+            overflow: auto;
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* SECTIONS */
+        .section {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        /* HEADER */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .back {
+            font-size: 28px;
+            cursor: pointer;
+        }
+
+        /* CARD */
+        .card {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* INPUT */
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+        }
+
+        /* BUTTON */
+        .send {
+            background: blue;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2>🧑 MEMBER</h2>
+
+        <button onclick="openModule('home')">🏠 Home</button>
+        <button onclick="openModule('profile')">👤 Profile</button>
+        <button onclick="openModule('plans')">🏢 Memberships</button>
+        <button onclick="openModule('schedule')">📅 Schedule</button>
+        <button onclick="openModule('payments')">💳 Payments</button>
+        <button onclick="openModule('notifications')">📩 Notifications</button>
+        <button onclick="openModule('feedback')">💬 Feedback</button>
+        <button onclick="logout()">🚪 Logout</button>
+
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <!-- HOME -->
+        <div id="home" class="section active">
+            <h1>Welcome Member 👋</h1>
+
+            <div class="card" id="homeInfo"></div>
+
+        </div>
+
+        <!-- PROFILE -->
+        <div id="profile" class="section">
+
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Profile</h2>
+            </div>
+
+            <div class="card">
+                <img id="photo" width="80" height="80">
+
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Name:</b></td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;" id="name"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Email:</b></td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;" id="email"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Phone:</b></td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;" id="phone"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Gender:</b></td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;" id="gender"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Role:</b></td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;" id="role"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);"><b>Batch:</b></td>
+                        <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);" id="batch"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);"><b>Trainer:</b></td>
+                        <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);" id="trainer"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);"><b>Plan:</b></td>
+                        <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);" id="plan"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);"><b>Expiry Date:</b>
+                        </td>
+                        <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);" id="expiryDate"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Status:</b></td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;" id="status"></td>
+                    </tr>
+                </table>
+
+            </div>
+
+        </div>
+
+        <!-- BATCH -->
+        <div id="batch" class="section">
+
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>My Batch</h2>
+            </div>
+
+            <div class="card" id="batchInfo"></div>
+
+        </div>
+
+        <!-- SCHEDULE -->
+        <div id="schedule" class="section">
+
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Schedule</h2>
+            </div>
+
+            <div class="card" id="scheduleBox">
+                <p>Loading schedule...</p>
+            </div>
+
+        </div>
+
+        <!-- PLANS -->
+        <div id="plans" class="section">
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Membership Plans</h2>
+            </div>
+            <p style="color: #ccc; margin-bottom: 20px; font-size: 16px;">Select a plan that fits your goals.</p>
+            <div id="plansList" class="stats-grid">
+                <p>Loading plans...</p>
+            </div>
+        </div>
+
+        <!-- PAYMENTS -->
+        <div id="payments" class="section">
+
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Payments</h2>
+            </div>
+
+            <p style="color: #ccc; margin-bottom: 20px; font-size: 16px;">Manage your membership fees.</p>
+            
+            <div id="paymentInfo"></div>
+
+            <div id="paymentAction" style="display: none; margin-top: 20px;">
+                <h3 style="margin-bottom: 15px; color: #fff;">Select Payment Method</h3>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <button class="send" onclick="showOnlinePayment()" style="background: #39ff14; color: #000; font-weight: bold; padding: 12px 20px; font-size: 15px;">💳 Pay Online (UPI QR)</button>
+                    <button class="send" style="background: #ff9800; color: #000; font-weight: bold; padding: 12px 20px; font-size: 15px;" onclick="processOfflinePayment()">🏦 Pay Offline (Front Desk)</button>
+                </div>
+            </div>
+
+            <!-- ONLINE UPI QR PAYMENT CARD -->
+            <div id="onlinePaymentForm" class="card" style="display: none; border: 2px solid #39ff14; background: #12121a; color: white; padding: 25px; border-radius: 12px; max-width: 450px; margin: 20px 0; text-align: center; box-shadow: 0 4px 20px rgba(57, 255, 20, 0.2);">
+                <h3 style="color: #39ff14; margin-top: 0; font-size: 20px; font-weight: bold; letter-spacing: 0.5px;">UPI QR Payment Checkout</h3>
+                
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin: 15px 0; border: 1px solid rgba(255,255,255,0.1);">
+                    <p style="color: #aaa; margin: 0 0 5px 0; font-size: 13px; text-transform: uppercase;">Plan Selected</p>
+                    <p style="color: #fff; font-size: 17px; font-weight: bold; margin: 0 0 12px 0;" id="checkoutPlanName">-</p>
+                    <p style="color: #aaa; margin: 0 0 5px 0; font-size: 13px; text-transform: uppercase;">Amount Due</p>
+                    <p style="color: #39ff14; font-size: 28px; font-weight: bold; margin: 0;">₹<span id="payAmount">0.00</span></p>
+                </div>
+                
+                <p style="color: #ccc; font-size: 13px; margin-bottom: 15px; line-height: 1.4;">Scan this QR code using any UPI App (PhonePe, Google Pay, Paytm, BHIM) to pay securely.</p>
+                
+                <div style="background: white; display: inline-block; padding: 12px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                    <img id="upiQrCode" src="" alt="UPI QR Code" style="width: 180px; height: 180px; display: block; margin: 0 auto;">
+                </div>
+                
+                <button class="send" id="payNowBtn" onclick="processOnlinePayment()"
+                    style="width: 100%; margin-top: 15px; background: #39ff14; color: black; font-weight: bold; font-size: 15px; padding: 12px; border-radius: 6px; transition: 0.3s; cursor: pointer; border: none;">I have Paid</button>
+                <button class="send" onclick="cancelPayment()"
+                    style="width: 100%; margin-top: 10px; background: #333; color: white; padding: 10px; border-radius: 6px; border: none; cursor: pointer;">Cancel</button>
+            </div>
+
+            <div id="memberPaymentHistory"></div>
+
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div id="notifications" class="section">
+
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Notifications</h2>
+            </div>
+
+            <div class="card" id="notifBox"></div>
+
+        </div>
+
+        <!-- FEEDBACK -->
+        <div id="feedback" class="section">
+
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Feedback</h2>
+            </div>
+
+            <div class="card">
+
+                <h3>Send Feedback</h3>
+
+                <textarea id="msg" placeholder="Write your feedback..."></textarea>
+
+                <select id="toWhom">
+                    <option value="admin">👨‍💼 To Admin</option>
+                    <option value="trainer">🏋️ To Trainer</option>
+                    <option value="both">👥 To Both</option>
+                </select>
+
+                <button class="send" onclick="sendFeedback()">Send</button>
+
+            </div>
+
+            <div class="card">
+                <h3>My Feedback</h3>
+                <div id="feedbackList"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        let history = [];
+
+        /* 🔑 SUPABASE SETUP */
+        const SUPABASE_URL = "https://obtagynscjhnihcslhns.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_AWEJbRPrIDWrNiG298HTlg_qMserpgr";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentUser = null;
+        let memberProfile = null;
+
+        /* NAVIGATION */
+        function openModule(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            history.push(id);
+            if (id === 'home' || id === 'profile') loadData();
+            if (id === 'feedback') loadFeedback();
+            if (id === 'schedule') loadSchedule();
+            if (id === 'plans') loadPlans();
+            if (id === 'payments') loadMemberPayments();
+        }
+
+        /* BACK */
+        function back() {
+            history.pop();
+            let last = history[history.length - 1] || "home";
+
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(last).classList.add('active');
+        }
+
+        /* AUTH & LOAD DATA */
+        async function checkAuth() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                window.location.href = "login.html";
+                return;
+            }
+            currentUser = session.user;
+            await loadMemberProfile();
+        }
+
+        async function loadMemberProfile() {
+            // Fetch profile first so we always have full member details.
+            const { data: profileData, error: profileErr } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('id', currentUser.id)
+                .single();
+
+            if (!profileData || profileErr) {
+                console.error('Profile load failed:', profileErr);
+                window.location.href = 'login.html';
+                return;
+            }
+
+            let { data: memberData, error: memberErr } = await supabaseClient
+                .from('members')
+                .select('*')
+                .eq('id', currentUser.id)
+                .single();
+
+            if (!memberData && !memberErr) {
+                const { error: insertErr } = await supabaseClient
+                    .from('members')
+                    .insert([{ id: currentUser.id, payment_status: 'Pending' }]);
+                if (insertErr) {
+                    console.error('Member row creation failed:', insertErr);
+                } else {
+                    const { data: retryMemberData, error: retryErr } = await supabaseClient
+                        .from('members')
+                        .select('*')
+                        .eq('id', currentUser.id)
+                        .single();
+                    memberData = retryMemberData;
+                    memberErr = retryErr;
+                }
+            }
+
+            memberProfile = {
+                ...profileData,
+                ...(memberData || {}),
+                batch: (memberData && memberData.batch) || profileData.batch || 'Unassigned',
+                plan: (memberData && memberData.plan) || profileData.plan || 'N/A',
+                status: profileData.status || 'Pending'
+            };
+
+            await loadData();
+        }
+
+        async function loadData() {
+            if (!memberProfile) return;
+
+            let trainerName = "Not Assigned";
+            if (memberProfile.batch && memberProfile.batch !== 'Unassigned') {
+                const { data: batchData } = await supabaseClient
+                    .from('batches')
+                    .select('trainer_id')
+                    .eq('name', memberProfile.batch)
+                    .single();
+
+                if (batchData && batchData.trainer_id) {
+                    const { data: trainerData } = await supabaseClient
+                        .from('profiles')
+                        .select('full_name')
+                        .eq('id', batchData.trainer_id)
+                        .single();
+                    if (trainerData) trainerName = trainerData.full_name;
+                }
+            }
+
+            document.getElementById("name").innerText = memberProfile.full_name || "N/A";
+            document.getElementById("email").innerText = currentUser.email || "N/A";
+            document.getElementById("phone").innerText = memberProfile.phone || "N/A";
+            document.getElementById("gender").innerText = memberProfile.gender || "N/A";
+            document.getElementById("role").innerText = "Member";
+            document.getElementById("batch").innerText = memberProfile.batch;
+            document.getElementById("plan").innerText = memberProfile.plan;
+            let dbExpiry = memberProfile.expiry || memberProfile.expiry_date;
+            document.getElementById("expiryDate").innerText = dbExpiry ? new Date(dbExpiry).toLocaleDateString() : "N/A";
+            document.getElementById("trainer").innerText = trainerName;
+            document.getElementById("status").innerHTML = memberProfile.status === 'Pending' ? '<span style="color:orange; font-weight:bold;">Pending Approval</span>' : '<span style="color:green; font-weight:bold;">Active</span>';
+
+            document.getElementById("photo").src = memberProfile.photo_url || "https://via.placeholder.com/80";
+
+            document.getElementById("homeInfo").innerHTML = `
+    <div class="stats-grid">
+        <div class="stat-box">
+            <h3>Assigned Batch</h3>
+            <p>${memberProfile.batch}</p>
+        </div>
+        <div class="stat-box">
+            <h3>Current Plan</h3>
+            <p>${memberProfile.plan}</p>
+        </div>
+        <div class="stat-box">
+            <h3>Account Status</h3>
+            <p style="color: ${memberProfile.status === 'Pending' ? '#ff9800' : '#39ff14'};">${memberProfile.status === 'Pending' ? 'Pending' : 'Active'}</p>
+        </div>
+    </div>
+    `;
+
+            document.getElementById("batchInfo").innerHTML = `
+    <div class="stats-grid">
+        <div class="stat-box">
+            <h3>Your Batch</h3>
+            <p>${memberProfile.batch}</p>
+        </div>
+        <div class="stat-box">
+            <h3>Assigned Trainer</h3>
+            <p>${trainerName}</p>
+        </div>
+        <div class="stat-box" onclick="openModule('schedule')" style="cursor: pointer;">
+            <h3>Session Time</h3>
+            <p style="font-size: 18px; color: #fff; margin-top: 5px;">🗓️ View Schedule</p>
+        </div>
+    </div>
+    `;
+
+            let pStatus = memberProfile.payment_status || 'Pending';
+            let pMethod = memberProfile.payment_method || 'None';
+
+            // Custom styling logic for payment information
+            let statusColor = '#ff9800'; // Orange for pending/verifying
+            if (pStatus === 'Paid') {
+                statusColor = '#39ff14'; // Neon Green
+            } else if (pStatus === 'Pending Verification') {
+                statusColor = '#ffc107'; // Golden Yellow
+            } else if (pStatus.toLowerCase().includes('pending')) {
+                statusColor = '#ff9800';
+            }
+
+            if (!memberProfile.plan || memberProfile.plan === 'N/A') {
+                document.getElementById("paymentInfo").innerHTML = `
+                <div class="card" style="background: #12121a; text-align: center; padding: 30px; border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px;">
+                    <div style="font-size: 40px; margin-bottom: 15px;">💳</div>
+                    <h3 style="color: #ff4d1c; margin-top: 0;">No Plan Selected</h3>
+                    <p style="color: #ccc; margin-bottom: 20px;">Please choose a membership plan from the "Memberships" tab to proceed with payment.</p>
+                    <button class="send" onclick="openModule('plans')" style="background: #39ff14; color: black; font-weight: bold; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">View Memberships</button>
+                </div>
+                `;
+                document.getElementById("paymentAction").style.display = "none";
+                document.getElementById("onlinePaymentForm").style.display = "none";
+            } else {
+                document.getElementById("paymentInfo").innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <h3>Current Plan</h3>
+                        <p>${memberProfile.plan}</p>
+                    </div>
+                    <div class="stat-box">
+                        <h3>Payment Status</h3>
+                        <p style="color: ${statusColor}; font-weight: bold;">${pStatus}</p>
+                    </div>
+                    <div class="stat-box">
+                        <h3>Method</h3>
+                        <p style="color: white; font-size: 16px;">${pMethod}</p>
+                    </div>
+                </div>
+                `;
+
+                if (pStatus === 'Pending Verification') {
+                    // Show verifying banner
+                    document.getElementById("paymentInfo").innerHTML += `
+                    <div class="card" style="background: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center;">
+                        <h4 style="color: #ffc107; margin-top: 0; margin-bottom: 5px;">⌛ Payment Verification in Progress</h4>
+                        <p style="color: #ccc; margin: 0; font-size: 14px;">Your payment request via <b>${pMethod}</b> is pending administrator confirmation. Once verified, your membership will be activated immediately.</p>
+                    </div>
+                    `;
+                    document.getElementById("paymentAction").style.display = "none";
+                    document.getElementById("onlinePaymentForm").style.display = "none";
+                } else if (pStatus === 'Paid') {
+                    // Paid successfully!
+                    document.getElementById("paymentInfo").innerHTML += `
+                    <div class="card" style="background: rgba(57, 255, 20, 0.1); border: 1px solid #39ff14; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center;">
+                        <h4 style="color: #39ff14; margin-top: 0; margin-bottom: 5px;">✓ Membership Active</h4>
+                        <p style="color: #ccc; margin: 0; font-size: 14px;">Thank you! Your payment is fully processed and your account is active.</p>
+                    </div>
+                    `;
+                    document.getElementById("paymentAction").style.display = "none";
+                    document.getElementById("onlinePaymentForm").style.display = "none";
+                } else {
+                    // Payment is pending (needs checkout option)
+                    document.getElementById("paymentAction").style.display = "block";
+                }
+            }
+
+            loadNotifications();
+            // If a plan was selected from the standalone selector page, open Payments
+            try {
+                const selPlan = localStorage.getItem('selectedPlan');
+                const selBatch = localStorage.getItem('selectedBatch');
+                const selPayment = localStorage.getItem('selectedPayment');
+                if (selPlan) {
+                    memberProfile = memberProfile || {};
+                    // Only override if no plan set yet to avoid clobbering real data
+                    if (!memberProfile.plan || memberProfile.plan === 'N/A') memberProfile.plan = selPlan;
+                    if (!memberProfile.batch || memberProfile.batch === 'Unassigned') memberProfile.batch = selBatch || memberProfile.batch;
+                    if (selPayment) memberProfile.payment_method = selPayment;
+
+                    // clear selection after consuming
+                    localStorage.removeItem('selectedPlan');
+                    localStorage.removeItem('selectedBatch');
+                    localStorage.removeItem('selectedPayment');
+
+                    // open payments tab so user can complete checkout
+                    setTimeout(() => openModule('payments'), 200);
+                }
+            } catch (e) { console.warn('Reading selection failed', e); }
+        }
+
+        function showOnlinePayment() {
+            document.getElementById("paymentAction").style.display = "none";
+            document.getElementById("onlinePaymentForm").style.display = "block";
+            document.getElementById("checkoutPlanName").innerText = memberProfile.plan;
+
+            fetchPlanPrice();
+        }
+
+        async function fetchPlanPrice() {
+            document.getElementById("payAmount").innerText = "...";
+            if (!memberProfile.plan || memberProfile.plan === 'N/A') {
+                document.getElementById("payAmount").innerText = "0.00";
+                return;
+            }
+
+            let finalPrice = "0.00";
+
+            // Try exact match first
+            let { data, error } = await supabaseClient
+                .from('plans')
+                .select('price')
+                .eq('name', memberProfile.plan)
+                .single();
+
+            if (data && data.price) {
+                finalPrice = parseFloat(data.price).toFixed(2);
+            } else {
+                // Fallback: search all plans for a partial/case-insensitive match
+                const { data: allPlans } = await supabaseClient
+                    .from('plans')
+                    .select('name, price');
+
+                if (allPlans) {
+                    let planLower = memberProfile.plan.toLowerCase();
+                    let matched = allPlans.find(p => planLower.includes(p.name.toLowerCase()) || p.name.toLowerCase().includes(planLower));
+                    if (matched) {
+                        finalPrice = parseFloat(matched.price).toFixed(2);
+                    } else {
+                        // Last resort: try to extract price from plan name (e.g. "1 Month - ₹500")
+                        let priceMatch = memberProfile.plan.match(/[₹$]?(\d+[,.]?\d*)/);
+                        if (priceMatch) {
+                            finalPrice = parseFloat(priceMatch[1].replace(',', '')).toFixed(2);
+                        }
+                    }
+                }
+            }
+
+            document.getElementById("payAmount").innerText = finalPrice;
+
+            // Generate UPI QR Code dynamically
+            let upiId = "gympayment@ybl";
+            let merchantName = "PowerFit Gym";
+            let upiUri = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${finalPrice}&cu=INR&tn=${encodeURIComponent(memberProfile.plan + " Gym Membership")}`;
+            let qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUri)}`;
+            document.getElementById("upiQrCode").src = qrUrl;
+        }
+
+        function cancelPayment() {
+            document.getElementById("paymentAction").style.display = "block";
+            document.getElementById("onlinePaymentForm").style.display = "none";
+        }
+
+        async function processOnlinePayment() {
+            let payBtn = document.getElementById("payNowBtn");
+            payBtn.innerText = "Processing Payment...";
+            payBtn.disabled = true;
+
+            // Instantly update local states for immediate UI refresh
+            memberProfile.payment_status = 'Paid';
+            memberProfile.payment_method = 'Online (UPI)';
+            memberProfile.status = 'Active';
+
+            // Attempt to record in database with await so the history is available immediately.
+            let amount = parseFloat(document.getElementById("payAmount").innerText) || 0;
+            const results = await Promise.all([
+                supabaseClient
+                    .from('members')
+                    .upsert({ 
+                        id: currentUser.id, 
+                        plan: memberProfile.plan,
+                        payment_status: 'Paid', 
+                        payment_method: 'Online (UPI)',
+                        expiry_date: memberProfile.expiry_date
+                    }),
+                supabaseClient
+                    .from('profiles')
+                    .update({ status: 'Active' })
+                    .eq('id', currentUser.id),
+                supabaseClient
+                    .from('payments')
+                    .insert([{
+                        member_id: currentUser.id,
+                        plan: memberProfile.plan,
+                        amount: amount,
+                        status: 'Paid'
+                    }])
+            ]).catch(err => {
+                console.warn("Database payment logging error:", err);
+                return [{ error: err }];
+            });
+
+            if (results && results[0] && results[0].error) {
+                alert("Payment could not be recorded. Please try again later.");
+                payBtn.innerText = "I have Paid";
+                payBtn.disabled = false;
+                return;
+            }
+
+            // Immediately simulate success in UI
+            alert("Payment Successful! Your membership has been activated.");
+            await loadData();
+            await loadMemberPayments();
+            payBtn.innerText = "I have Paid";
+            payBtn.disabled = false;
+        }
+
+        async function processOfflinePayment() {
+            if (confirm("Confirm requesting offline payment at the gym front desk?")) {
+                const { error } = await supabaseClient
+                    .from('members')
+                    .update({ 
+                        payment_status: 'Pending Verification', 
+                        payment_method: 'Offline (Pay at Desk)' 
+                    })
+                    .eq('id', currentUser.id);
+
+                if (error) alert("Error updating payment: " + error.message);
+                else {
+                    alert("Offline request submitted! Please pay at the front desk to activate your membership.");
+                    await loadMemberProfile();
+                }
+            }
+        }
+
+        async function loadMemberPayments() {
+            if (!currentUser) return;
+            const { data, error } = await supabaseClient
+                .from('payments')
+                .select('*')
+                .eq('member_id', currentUser.id)
+                .order('created_at', { ascending: false });
+
+            const historyContainer = document.getElementById('memberPaymentHistory');
+            if (!historyContainer) return;
+
+            if (error) {
+                historyContainer.innerHTML = `<div class="card" style="background: rgba(255,255,255,0.12); color: #fff;">Could not load payment history: ${error.message}</div>`;
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                historyContainer.innerHTML = `<div class="card" style="background: rgba(255,255,255,0.12); color: #fff;">No payment history yet.</div>`;
+                return;
+            }
+
+            let rows = data.map(p => {
+                return `
+                    <tr>
+                        <td>${p.plan || 'N/A'}</td>
+                        <td>₹${parseFloat(p.amount || 0).toFixed(2)}</td>
+                        <td>${p.status || 'N/A'}</td>
+                        <td>${p.created_at ? new Date(p.created_at).toLocaleDateString() : 'N/A'}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            historyContainer.innerHTML = `
+                <div class="card" style="padding: 15px; background: rgba(255,255,255,0.12); color: #fff;">
+                    <h3 style="margin-top: 0; color: #39ff14;">Payment History</h3>
+                    <table style="width: 100%; border-collapse: collapse; color: white;">
+                        <thead>
+                            <tr>
+                                <th style="padding: 8px; border: 1px solid rgba(255,255,255,0.15);">Plan</th>
+                                <th style="padding: 8px; border: 1px solid rgba(255,255,255,0.15);">Amount</th>
+                                <th style="padding: 8px; border: 1px solid rgba(255,255,255,0.15);">Status</th>
+                                <th style="padding: 8px; border: 1px solid rgba(255,255,255,0.15);">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        /* PLANS */
+        async function loadPlans() {
+            let container = document.getElementById("plansList");
+            if (!container) return;
+            container.innerHTML = "<p>Loading plans...</p>";
+
+            const { data, error } = await supabaseClient
+                .from('plans')
+                .select('*');
+
+                    if (data && data.length > 0) {
+                    container.innerHTML = "";
+                    data.forEach(p => {
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        card.style.margin = '0';
+                        card.style.textAlign = 'center';
+
+                        const title = document.createElement('h3');
+                        title.style.color = '#39ff14';
+                        title.style.fontSize = '24px';
+                        title.style.marginTop = '0';
+                        title.textContent = p.name;
+
+                        const priceEl = document.createElement('p');
+                        priceEl.style.fontSize = '32px';
+                        priceEl.style.fontWeight = 'bold';
+                        priceEl.style.margin = '10px 0';
+                        priceEl.textContent = '₹' + p.price;
+
+                        const btn = document.createElement('button');
+                        btn.className = 'send';
+                        btn.style.width = '100%';
+                        btn.textContent = 'Select Plan';
+                        btn.addEventListener('click', () => selectPlan(p.name, p.price));
+
+                        card.appendChild(title);
+                        card.appendChild(priceEl);
+                        card.appendChild(btn);
+                        container.appendChild(card);
+                    });
+                } else {
+                container.innerHTML = "<p>No plans available right now.</p>";
+            }
+        }
+
+            async function selectPlan(planName, planPrice) {
+                if (!confirm(`Are you sure you want to select the ${planName} plan for ₹${planPrice}?`)) return;
+
+                // Calculate expiry_date based on planName
+                let expiryDate = new Date();
+                let lowerName = planName.toLowerCase();
+
+                if (lowerName.includes('year')) {
+                    let match = lowerName.match(/(\d+)\s*year/);
+                    let years = match ? parseInt(match[1]) : 1;
+                    expiryDate.setFullYear(expiryDate.getFullYear() + years);
+                } else if (lowerName.includes('month')) {
+                    let match = lowerName.match(/(\d+)\s*month/);
+                    let months = match ? parseInt(match[1]) : 1;
+                    expiryDate.setMonth(expiryDate.getMonth() + months);
+                } else if (lowerName.includes('week')) {
+                    let match = lowerName.match(/(\d+)\s*week/);
+                    let weeks = match ? parseInt(match[1]) : 1;
+                    expiryDate.setDate(expiryDate.getDate() + weeks * 7);
+                } else if (lowerName.includes('day')) {
+                    let match = lowerName.match(/(\d+)\s*day/);
+                    let days = match ? parseInt(match[1]) : 1;
+                    expiryDate.setDate(expiryDate.getDate() + days);
+                } else {
+                    // Default to 1 month if format unknown
+                    expiryDate.setMonth(expiryDate.getMonth() + 1);
+                }
+
+                let formattedExpiry = expiryDate.toISOString().split('T')[0];
+
+                // Set plan details locally on memberProfile so it is immediately updated in UI
+                memberProfile = memberProfile || {};
+                memberProfile.plan = planName;
+                memberProfile.payment_status = 'Pending';
+                memberProfile.expiry = formattedExpiry;
+                memberProfile.expiry_date = formattedExpiry;
+
+                // Attempt to update database (await and catch errors) so UI navigation isn't blocked
+                try {
+                    const { error } = await supabaseClient
+                        .from('members')
+                        .upsert({
+                            id: currentUser.id,
+                            plan: planName,
+                            payment_status: 'Pending',
+                            expiry_date: formattedExpiry
+                        });
+                    if (error) console.warn("Plan upsert error:", error.message);
+                } catch (err) {
+                    console.warn("Upsert threw:", err);
+                }
+
+                // Inform the user and navigate to payment — ensure navigation even if loadData() fails
+                alert(`Successfully selected ${planName} plan! Please proceed to payment.`);
+                try { await loadData(); } catch (e) { console.warn('loadData failed after plan select:', e); }
+                openModule('payments');
+            }
+
+        /* NOTIFICATIONS */
+        async function loadNotifications() {
+            if (!memberProfile) return;
+
+            let filter = `receiver_id.eq.${currentUser.id},receiver_role.eq.member,receiver_role.is.null`;
+            if (memberProfile.batch && memberProfile.batch !== 'Unassigned') {
+                filter += `,batch.eq.${memberProfile.batch}`;
+            }
+
+            const { data, error } = await supabaseClient
+                .from('notifications')
+                .select('*, profiles!sender_id(full_name)')
+                .or(filter)
+                .order('created_at', { ascending: false });
+
+            if (data) {
+                let html = '';
+                data.forEach(n => {
+                    let sender = n.profiles ? n.profiles.full_name : 'System';
+                    html += `<p><b>From ${sender}:</b> ${n.message} <br><small>${new Date(n.created_at).toLocaleString()}</small></p><hr>`;
+                });
+                document.getElementById("notifBox").innerHTML = html || "No notifications";
+            }
+        }
+
+        /* SCHEDULE */
+        async function loadSchedule() {
+            if (!memberProfile || !memberProfile.batch || memberProfile.batch === 'Unassigned') {
+                document.getElementById("scheduleBox").innerHTML = "<p>No batch assigned yet.</p>";
+                return;
+            }
+
+            const { data, error } = await supabaseClient
+                .from('schedules')
+                .select('*')
+                .eq('batch', memberProfile.batch)
+                .single();
+
+            let trainerName = 'Your Trainer';
+            if (data && data.trainer_id) {
+                const { data: trainerProfile, error: trainerErr } = await supabaseClient
+                    .from('profiles')
+                    .select('full_name')
+                    .eq('id', data.trainer_id)
+                    .single();
+                if (trainerProfile) trainerName = trainerProfile.full_name;
+                if (trainerErr) console.warn('Trainer name lookup failed:', trainerErr);
+            }
+
+            if (data) {
+                document.getElementById("scheduleBox").innerHTML = `
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Monday:</b></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.monday || 'Rest'}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Tuesday:</b></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.tuesday || 'Rest'}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Wednesday:</b></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.wednesday || 'Rest'}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Thursday:</b></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.thursday || 'Rest'}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Friday:</b></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.friday || 'Rest'}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Saturday:</b></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.saturday || 'Rest'}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Sunday:</b></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.sunday || 'Rest'}</td></tr>
+        </table>
+        <p style="margin-top: 15px; font-size: 14px; color: #39ff14; text-align: right;">
+            <b>Schedule set by:</b> ${trainerName}
+        </p>
+        `;
+            } else {
+                const { data: batchData, error: batchErr } = await supabaseClient
+                    .from('batches')
+                    .select('time_slot')
+                    .eq('name', memberProfile.batch)
+                    .single();
+
+                let batchTime = batchData ? batchData.time_slot : 'N/A';
+                if (batchErr) console.warn('Batch lookup failed:', batchErr);
+                document.getElementById("scheduleBox").innerHTML = `
+                    <p>Your trainer hasn't set a detailed schedule for batch <b>${memberProfile.batch}</b> yet.</p>
+                    <p><b>Batch Time:</b> ${batchTime}</p>
+                    <p>Check back later or ask your trainer to add the schedule.</p>
+                `;
+            }
+        }
+
+        /* FEEDBACK */
+        async function sendFeedback() {
+
+            let msg = document.getElementById("msg").value;
+            let to = document.getElementById("toWhom").value;
+
+            if (msg.trim() === "") {
+                alert("Enter feedback");
+                return;
+            }
+
+            const { error } = await supabaseClient
+                .from('feedback')
+                .insert([{
+                    user_id: currentUser.id,
+                    message: msg,
+                    to_whom: to
+                }]);
+
+            if (error) {
+                alert("Error sending feedback: " + error.message);
+                return;
+            }
+
+            document.getElementById("msg").value = "";
+            await loadFeedback();
+            alert("Feedback sent!");
+        }
+
+        /* LOAD FEEDBACK */
+        async function loadFeedback() {
+            const { data, error } = await supabaseClient
+                .from('feedback')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .order('created_at', { ascending: false });
+
+            let box = document.getElementById("feedbackList");
+            box.innerHTML = "";
+
+            if (data) {
+                data.forEach(f => {
+                    box.innerHTML += `
+            <p>
+            <b>To:</b> ${f.to_whom}<br>
+            <b>Message:</b> ${f.message}<br>
+            <b>Date:</b> ${new Date(f.created_at).toLocaleString()}
+            </p>
+            <hr>
+            `;
+                });
+            }
+        }
+
+        /* LOGOUT */
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            window.location.href = "login.html";
+        }
+
+        /* INIT */
+        checkAuth();
+
+    </script>
+
+</body>
+
+</html>
+
+
+
+</body>
+
+</html>

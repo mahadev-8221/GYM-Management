@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Application Status</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial;
+    background: url('https://images.unsplash.com/photo-1554284126-aa88f22d8b74') no-repeat center center/cover;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card {
+    background: rgba(0,0,0,0.75);
+    padding: 30px;
+    width: 400px;
+    border-radius: 15px;
+    color: white;
+    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    text-align: center;
+}
+
+h2 {
+    color: #00ffcc;
+}
+
+.info {
+    text-align: left;
+    margin-top: 20px;
+}
+
+.info p {
+    margin: 10px 0;
+    font-size: 15px;
+}
+
+.status {
+    margin-top: 20px;
+    padding: 10px;
+    background: orange;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 10px;
+    background: #00ffcc;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #00ccaa;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h2>🎉 Application Submitted</h2>
+
+    <div class="info">
+        <p><b>Batch:</b> <span id="batch"></span></p>
+        <p><b>Plan:</b> <span id="plan"></span></p>
+        <p><b>Payment Mode:</b> <span id="payment"></span></p>
+    </div>
+
+    <div class="status">
+        Status: PENDING ⏳
+    </div>
+
+    <button onclick="goHome()">Go to Dashboard</button>
+</div>
+
+<script>
+// Example: getting data from localStorage (future backend ready)
+document.getElementById("batch").innerText = localStorage.getItem("batch") || "Not Selected";
+document.getElementById("plan").innerText = localStorage.getItem("plan") || "Not Selected";
+document.getElementById("payment").innerText = localStorage.getItem("payment") || "Not Selected";
+
+function goHome() {
+    alert("Redirecting to dashboard...");
+    window.location.href = "dashboard.html";
+}
+</script>
+
+</body>
+</html>

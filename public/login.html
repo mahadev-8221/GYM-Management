@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — PowerFit Gym</title>
+  <meta name="description" content="Log in to your PowerFit Gym account to access your dashboard, track your fitness progress, and manage your membership.">
+
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-primary);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Background image with overlay */
+    body::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(10,10,15,0.92), rgba(10,10,15,0.85)),
+        url('https://images.unsplash.com/photo-1571902943202-507ec2618e8f') no-repeat center/cover;
+      z-index: 0;
+    }
+
+    /* Accent glow */
+    body::after {
+      content: '';
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      top: -150px;
+      right: -150px;
+      animation: floatBg 15s ease-in-out infinite;
+      z-index: 0;
+    }
+
+    .login-wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 420px;
+      padding: 20px;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .login-card {
+      background: rgba(18, 18, 26, 0.8);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 40px 32px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .login-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+    }
+
+    .login-logo i {
+      color: var(--accent);
+    }
+
+    .login-header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .login-header p {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-wrapper input {
+      width: 100%;
+      padding: 13px 44px 13px 16px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      transition: all var(--transition);
+      outline: none;
+    }
+
+    .input-wrapper input:focus {
+      background: var(--bg-input-focus);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .input-wrapper input::placeholder {
+      color: var(--text-muted);
+    }
+
+    /* Override Chrome autofill styles */
+    .input-wrapper input:-webkit-autofill,
+    .input-wrapper input:-webkit-autofill:hover,
+    .input-wrapper input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px rgba(18, 18, 26, 0.95) inset !important;
+      -webkit-text-fill-color: var(--text-primary) !important;
+      border: 1px solid var(--border) !important;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+
+    .input-wrapper .input-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      transition: color var(--transition-fast);
+    }
+
+    .input-wrapper .input-icon:hover {
+      color: var(--text-secondary);
+    }
+
+    .form-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+
+    .form-options label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .form-options label input[type="checkbox"] {
+      accent-color: var(--accent);
+    }
+
+    .form-options a {
+      color: var(--accent-light);
+      font-weight: 500;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent-gradient);
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 15px;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition);
+      box-shadow: 0 4px 20px var(--accent-glow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px var(--accent-glow);
+    }
+
+    .login-btn:hover::before {
+      opacity: 1;
+    }
+
+    .login-btn:active {
+      transform: translateY(0);
+    }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .login-footer a {
+      color: var(--accent-light);
+      font-weight: 600;
+    }
+
+    .error-msg {
+      background: var(--red-glow);
+      color: var(--red);
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 18px;
+      display: none;
+      border: 1px solid rgba(239, 68, 68, 0.15);
+      text-align: center;
+    }
+
+    .back-to-home {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      padding: 8px 14px;
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      text-decoration: none;
+      transition: all var(--transition);
+    }
+
+    .back-to-home:hover {
+      color: var(--text-primary);
+      background: var(--bg-glass-hover);
+    }
+  </style>
+</head>
+
+<body>
+
+  <a href="index.html" class="back-to-home">
+    <i class="fas fa-arrow-left"></i> Home
+  </a>
+
+  <div class="login-wrapper">
+    <div class="login-card">
+
+      <div class="login-header">
+        <div class="login-logo">
+          <i class="fas fa-dumbbell"></i> PowerFit
+        </div>
+        <h1>Welcome Back</h1>
+        <p>Sign in to access your dashboard</p>
+      </div>
+
+      <form id="loginForm">
+
+        <div class="error-msg" id="errorMsg"></div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <div class="input-wrapper">
+            <input type="text" id="email" placeholder="you@gmail.com" required>
+            <i class="fa fa-envelope input-icon"></i>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrapper">
+            <input type="password" id="password" placeholder="Enter password" required>
+            <i class="fa fa-eye input-icon" id="togglePassword"></i>
+          </div>
+        </div>
+
+        <div class="form-options">
+          <label><input type="checkbox"> Remember me</label>
+          <a href="forgot-password.html">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="login-btn">Sign In</button>
+
+        <div class="login-footer">
+          <p>Don't have an account? <a href="register.html">Register</a></p>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <script>
+
+    /* 🔑 SUPABASE SETUP */
+    const SUPABASE_URL = "https://obtagynscjhnihcslhns.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_AWEJbRPrIDWrNiG298HTlg_qMserpgr";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    /* LOGIN VALIDATION */
+    document.getElementById("loginForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      let email = document.getElementById("email").value.trim();
+      let password = document.getElementById("password").value.trim();
+      let error = document.getElementById("errorMsg");
+
+      error.style.display = "none";
+
+      /* EMPTY CHECK */
+      if (email === "" || password === "") {
+        error.innerText = "All fields are required";
+        error.style.display = "block";
+        return;
+      }
+
+      /* ADMIN HARDCODED LOGIN */
+      if (email === "chetan@123" && password === "gym@12345") {
+        window.location.href = "admin-dashboard.html";
+        return;
+      }
+
+      /* SUPABASE LOGIN */
+      const { data, error: signInError } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+
+      if (signInError) {
+        error.innerText = signInError.message;
+        error.style.display = "block";
+        return;
+      }
+
+      /* FETCH ROLE AND REDIRECT */
+      const { data: profile, error: profileError } = await supabaseClient
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .single();
+
+      if (profileError) {
+        if (email === "chetan@123") {
+          window.location.href = "admin-dashboard.html";
+          return;
+        }
+        error.innerText = "Error fetching user profile";
+        error.style.display = "block";
+        return;
+      }
+
+      if (profile.role === 'admin') {
+        window.location.href = "admin-dashboard.html";
+      } else if (profile.role === 'trainer') {
+        window.location.href = "trainer-dashboard.html";
+      } else {
+        window.location.href = "member-dashboard.html";
+      }
+
+    });
+
+    /* PASSWORD TOGGLE */
+    const togglePassword = document.getElementById("togglePassword");
+    const passwordField = document.getElementById("password");
+
+    togglePassword.addEventListener("click", function () {
+      if (passwordField.type === "password") {
+        passwordField.type = "text";
+        this.classList.replace("fa-eye", "fa-eye-slash");
+      } else {
+        passwordField.type = "password";
+        this.classList.replace("fa-eye-slash", "fa-eye");
+      }
+    });
+
+  </script>
+
+</body>
+
+</html>

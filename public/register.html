@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register — PowerFit Gym</title>
+  <meta name="description"
+    content="Create your PowerFit Gym account. Join as a member or trainer and start your fitness journey today.">
+
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-primary);
+      position: relative;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 40px 20px;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(10, 10, 15, 0.92), rgba(10, 10, 15, 0.88)),
+        url('pair-of-dumbs-sitting-on-yoga-mat-on-white-wooden-floor-with-free-photo.jpeg') no-repeat center/cover;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, transparent 70%);
+      bottom: -150px;
+      left: -150px;
+      animation: floatBg 12s ease-in-out infinite reverse;
+      z-index: 0;
+    }
+
+    .register-wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 460px;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .register-card {
+      background: rgba(18, 18, 26, 0.8);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 36px 32px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .register-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .register-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+
+    .register-logo i {
+      color: var(--accent);
+    }
+
+    .register-header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .register-header p {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-wrapper input,
+    .input-wrapper select {
+      width: 100%;
+      padding: 12px 40px 12px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      transition: all var(--transition);
+      outline: none;
+    }
+
+    .input-wrapper select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 8.825a.5.5 0 0 1-.354-.146l-4-4a.5.5 0 0 1 .708-.708L6 7.617l3.646-3.646a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.354.146z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+
+    .input-wrapper select option {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    .input-wrapper input:focus,
+    .input-wrapper select:focus {
+      background: var(--bg-input-focus);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .input-wrapper input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .input-wrapper .input-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      transition: color var(--transition-fast);
+    }
+
+    .input-wrapper .input-icon:hover {
+      color: var(--text-secondary);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* Photo upload */
+    .photo-upload {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .photo-upload input[type="file"] {
+      display: none;
+    }
+
+    .upload-btn,
+    .camera-btn {
+      padding: 10px 16px;
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .upload-btn:hover,
+    .camera-btn:hover {
+      background: var(--bg-glass-hover);
+      color: var(--text-primary);
+    }
+
+    #preview {
+      display: none;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+      flex-shrink: 0;
+    }
+
+    #cameraArea {
+      display: none;
+      margin-bottom: 16px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: #000;
+      position: relative;
+      border: 1px solid var(--border);
+    }
+
+    #video {
+      width: 100%;
+      display: block;
+    }
+
+    .capture-btn {
+      width: 100%;
+      padding: 10px;
+      background: var(--green);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      border: none;
+      cursor: pointer;
+      transition: background var(--transition-fast);
+    }
+
+    .capture-btn:hover {
+      background: #1eaa52;
+    }
+
+    .register-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent-gradient);
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 15px;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition);
+      box-shadow: 0 4px 20px var(--accent-glow);
+      margin-top: 8px;
+    }
+
+    .register-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px var(--accent-glow);
+    }
+
+    .register-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .register-footer a {
+      color: var(--accent-light);
+      font-weight: 600;
+    }
+
+    .error-msg {
+      background: var(--red-glow);
+      color: var(--red);
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      display: none;
+      border: 1px solid rgba(239, 68, 68, 0.15);
+      text-align: center;
+    }
+
+    .back-to-home {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      padding: 8px 14px;
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      text-decoration: none;
+      transition: all var(--transition);
+      backdrop-filter: blur(10px);
+    }
+
+    .back-to-home:hover {
+      color: var(--text-primary);
+      background: var(--bg-glass-hover);
+    }
+  </style>
+</head>
+
+<body>
+
+  <a href="index.html" class="back-to-home">
+    <i class="fas fa-arrow-left"></i> Home
+  </a>
+
+  <div class="register-wrapper">
+    <div class="register-card">
+
+      <div class="register-header">
+        <div class="register-logo">
+          <i class="fas fa-dumbbell"></i> PowerFit
+        </div>
+        <h1>Create Account</h1>
+        <p>Join the PowerFit community today</p>
+      </div>
+
+      <div class="error-msg" id="errorMsg"></div>
+
+      <form id="registerForm">
+
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <div class="input-wrapper">
+            <input type="text" id="name" placeholder="John Doe" required>
+            <i class="fa fa-user input-icon"></i>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <div class="input-wrapper">
+            <input type="text" id="email" placeholder="you@gmail.com" required>
+            <i class="fa fa-envelope input-icon"></i>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <div class="input-wrapper">
+              <input type="text" id="phone" placeholder="10 digits" maxlength="10" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="gender">Gender</label>
+            <div class="input-wrapper">
+              <select id="gender" required>
+                <option value="">Select</option>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="role">Register As</label>
+          <div class="input-wrapper">
+            <select id="role" required>
+              <option value="">Select Role</option>
+              <option value="member">Member</option>
+              <option value="trainer">Trainer</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Photo -->
+        <div class="form-group">
+          <label>Profile Photo (optional)</label>
+          <div class="photo-upload">
+            <img id="preview">
+            <label for="photo" class="upload-btn"><i class="fa fa-upload"></i> Upload</label>
+            <input type="file" id="photo" accept="image/*">
+            <!-- <button type="button" class="camera-btn" onclick="toggleCamera()"><i class="fa fa-camera"></i> Camera</button> -->
+          </div>
+        </div>
+
+        <div id="cameraArea">
+          <video id="video" autoplay playsinline></video>
+          <button type="button" class="capture-btn" onclick="captureSnapshot()">📸 Capture Snapshot</button>
+        </div>
+
+        <canvas id="canvas" style="display:none;"></canvas>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="input-wrapper">
+              <input type="password" id="password" placeholder="Min 4 chars" required>
+              <i class="fa fa-eye input-icon" onclick="togglePassword('password', this)"></i>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">Confirm</label>
+            <div class="input-wrapper">
+              <input type="password" id="confirmPassword" placeholder="Re-enter" required>
+              <i class="fa fa-eye input-icon" onclick="togglePassword('confirmPassword', this)"></i>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="register-btn">Create Account</button>
+
+      </form>
+
+      <div class="register-footer">
+        <p>Already have an account? <a href="login.html">Sign In</a></p>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+
+    /* 🔑 SUPABASE */
+    const SUPABASE_URL = "https://obtagynscjhnihcslhns.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_AWEJbRPrIDWrNiG298HTlg_qMserpgr";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    /* CHECK TRAINER LIMIT ON LOAD */
+    async function checkTrainerLimit() {
+      const { count, error } = await supabaseClient
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('role', 'trainer');
+
+      if (!error && count >= 3) {
+        const roleSelect = document.getElementById("role");
+        for (let i = 0; i < roleSelect.options.length; i++) {
+          if (roleSelect.options[i].value === 'trainer') {
+            roleSelect.options[i].disabled = true;
+            roleSelect.options[i].text = 'Trainer (Limit Reached)';
+            break;
+          }
+        }
+      }
+    }
+    checkTrainerLimit();
+
+    /* VALIDATIONS */
+    document.getElementById("name").addEventListener("input", function () {
+      this.value = this.value.replace(/[^a-zA-Z ]/g, "");
+    });
+
+    document.getElementById("phone").addEventListener("input", function () {
+      this.value = this.value.replace(/[^0-9]/g, "");
+    });
+
+    /* PASSWORD TOGGLE */
+    function togglePassword(id, icon) {
+      let input = document.getElementById(id);
+      if (input.type === "password") {
+        input.type = "text";
+        icon.classList.replace("fa-eye", "fa-eye-slash");
+      } else {
+        input.type = "password";
+        icon.classList.replace("fa-eye-slash", "fa-eye");
+      }
+    }
+
+    /* CAMERA LOGIC */
+    let stream = null;
+    let capturedBlob = null;
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const cameraArea = document.getElementById("cameraArea");
+
+    async function toggleCamera() {
+      if (stream) {
+        stopCamera();
+        cameraArea.style.display = "none";
+      } else {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          video.srcObject = stream;
+          cameraArea.style.display = "block";
+        } catch (err) {
+          alert("Could not access camera: " + err.message);
+        }
+      }
+    }
+
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+      }
+    }
+
+    function captureSnapshot() {
+      const context = canvas.getContext("2d");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob((blob) => {
+        capturedBlob = blob;
+        const url = URL.createObjectURL(blob);
+        preview.src = url;
+        preview.style.display = "block";
+        stopCamera();
+        cameraArea.style.display = "none";
+      }, "image/jpeg");
+    }
+
+    /* IMAGE PREVIEW */
+    const photoInput = document.getElementById("photo");
+    const preview = document.getElementById("preview");
+
+    photoInput.addEventListener("change", function () {
+      const file = this.files[0];
+      capturedBlob = null;
+
+      if (file) {
+        if (!file.type.startsWith("image/")) {
+          alert("Only images allowed");
+          this.value = "";
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          preview.src = e.target.result;
+          preview.style.display = "block";
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+
+    /* REGISTER */
+    document.getElementById("registerForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      let name = document.getElementById("name").value.trim();
+      let email = document.getElementById("email").value.trim();
+      let phone = document.getElementById("phone").value.trim();
+      let gender = document.getElementById("gender").value;
+      let role = document.getElementById("role").value;
+      let password = document.getElementById("password").value;
+      let confirm = document.getElementById("confirmPassword").value;
+
+      let error = document.getElementById("errorMsg");
+      error.style.display = "none";
+
+      /* VALIDATION */
+      if (!name || !email || !phone || !gender || !role || !password || !confirm) {
+        error.innerText = "All fields required";
+        error.style.display = "block";
+        return;
+      }
+
+      if (!email.endsWith("@gmail.com")) {
+        error.innerText = "Email must be @gmail.com";
+        error.style.display = "block";
+        return;
+      }
+
+      if (phone.length !== 10) {
+        error.innerText = "Phone must be 10 digits";
+        error.style.display = "block";
+        return;
+      }
+
+      if (password.length < 4) {
+        error.innerText = "Password min 4 chars";
+        error.style.display = "block";
+        return;
+      }
+
+      if (password !== confirm) {
+        error.innerText = "Passwords mismatch";
+        error.style.display = "block";
+        return;
+      }
+
+      /* TRAINER LIMIT CHECK */
+      if (role === 'trainer') {
+        const { count, error: countError } = await supabaseClient
+          .from('profiles')
+          .select('id', { count: 'exact', head: true })
+          .eq('role', 'trainer');
+
+        if (countError) {
+          error.innerText = "Failed to verify trainer limit: " + countError.message;
+          error.style.display = "block";
+          return;
+        }
+
+        if (count >= 3) {
+          error.innerText = "Trainer registration closed: Maximum limit of 3 trainers reached.";
+          error.style.display = "block";
+          return;
+        }
+      }
+
+      /* SIGNUP */
+      const { data, error: signUpError } = await supabaseClient.auth.signUp({
+        email: email,
+        password: password
+      });
+
+      if (signUpError) {
+        error.innerText = signUpError.message;
+        error.style.display = "block";
+        return;
+      }
+
+      /* UPLOAD IMAGE */
+      let photoUrl = null;
+      let imageToUpload = capturedBlob || photoInput.files[0];
+
+      if (imageToUpload) {
+        const fileName = `${Date.now()}_${email.replace(/[^a-zA-Z0-9]/g, '_')}.jpg`;
+        const { data: uploadData, error: uploadError } = await supabaseClient.storage
+          .from('profile_images')
+          .upload(fileName, imageToUpload);
+
+        if (uploadError) {
+          error.innerText = "Upload Error: " + uploadError.message;
+          error.style.display = "block";
+          return;
+        }
+
+        const { data: { publicUrl } } = supabaseClient.storage
+          .from('profile_images')
+          .getPublicUrl(fileName);
+
+        photoUrl = publicUrl;
+      }
+
+      /* INSERT PROFILE */
+      const user = data.user;
+
+      const { error: profileError } = await supabaseClient
+        .from("profiles")
+        .insert([{
+          id: user.id,
+          full_name: name,
+          phone: phone,
+          gender: gender,
+          role: role,
+          status: 'Pending',
+          photo_url: photoUrl
+        }]);
+
+      if (profileError) {
+        error.innerText = profileError.message;
+        error.style.display = "block";
+        return;
+      }
+
+      /* INSERT ROLE-SPECIFIC DATA */
+      if (role === 'member') {
+        const { error: memberError } = await supabaseClient
+          .from("members")
+          .insert([{
+            id: user.id,
+            payment_status: 'Pending'
+          }]);
+        if (memberError) console.error("Member table error:", memberError);
+      } else if (role === 'trainer') {
+        const { error: trainerError } = await supabaseClient
+          .from("trainers")
+          .insert([{
+            id: user.id
+          }]);
+        if (trainerError) console.error("Trainer table error:", trainerError);
+      }
+
+      if (!data.session) {
+        alert("Registered Successfully! Please check your email to verify your account.");
+        return;
+      }
+
+      alert("Registered Successfully!");
+
+      if (role === "member") {
+        window.location.href = "member-dashboard.html";
+      } else if (role === "trainer") {
+        window.location.href = "trainer-dashboard.html";
+      } else {
+        window.location.href = "admin-dashboard.html";
+      }
+
+    });
+
+  </script>
+
+</body>
+
+</html>

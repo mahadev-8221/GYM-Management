@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Select Plan - Gym System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438') no-repeat center center/cover;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 30px;
+    width: 400px;
+    border-radius: 15px;
+    color: white;
+    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #00ffcc;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background: #00ffcc;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+button:hover {
+    background: #00ccaa;
+}
+
+#msg {
+    margin-top: 10px;
+    text-align: center;
+    color: yellow;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Select Plan</h2>
+
+    <label>Choose Batch</label>
+    <select id="batch">
+        <option value="">-- Select Batch --</option>
+        <option value="Batch 1 Morning (6:00–7:30 AM)">Batch 1 Morning (6:00–7:30 AM)</option>
+        <option value="Batch 2 Morning (7:30–9:00 AM)">Batch 2 Morning (7:30–9:00 AM)</option>
+        <option value="Batch 3 Evening (6:00–7:30 PM)">Batch 3 Evening (6:00–7:30 PM)</option>
+        <option value="Batch 4 Evening (7:30–9:00 PM)">Batch 4 Evening (7:30–9:00 PM)</option>
+    </select>
+
+    <label>Choose Plan</label>
+    <select id="plan">
+        <option value="">-- Select Plan --</option>
+        <option value="1 Month - ₹500">1 Month - ₹500</option>
+        <option value="3 Months - ₹1200">3 Months - ₹1200</option>
+        <option value="6 Months - ₹2000">6 Months - ₹2000</option>
+        <option value="1 Year - ₹3500">1 Year - ₹3500</option>
+    </select>
+
+    <label>Payment Mode</label>
+    <select id="payment">
+        <option value="">-- Select Payment --</option>
+        <option value="Cash">Cash</option>
+        <option value="UPI">UPI</option>
+    </select>
+
+    <button onclick="submitForm()">Submit</button>
+
+    <p id="msg"></p>
+</div>
+
+<script>
+function submitForm() {
+
+    let batch = document.getElementById("batch").value;
+    let plan = document.getElementById("plan").value;
+    let payment = document.getElementById("payment").value;
+    let msg = document.getElementById("msg");
+
+    // validation
+    if(batch === "" || plan === "" || payment === "") {
+        msg.innerHTML = "⚠️ Please select all fields!";
+        return;
+    }
+
+    // ✅ SAVE TO LOCALSTORAGE (THIS WAS MISSING)
+    localStorage.setItem("batch", batch);
+    localStorage.setItem("plan", plan);
+    localStorage.setItem("payment", payment);
+
+    console.log("Saved:", batch, plan, payment);
+
+    msg.innerHTML = "✅ Request Submitted Successfully!";
+
+    // redirect to member dashboard and open Payments: store selection so dashboard can react
+    localStorage.setItem('selectedBatch', batch);
+    localStorage.setItem('selectedPlan', plan);
+    localStorage.setItem('selectedPayment', payment);
+
+    // navigate to member dashboard (SPA will pick up selection)
+    setTimeout(() => {
+        window.location.href = "member-dashboard.html";
+    }, 400);
+}
+</script>
+
+</body>
+</html>

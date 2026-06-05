@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gym Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        /* BACKGROUND */
+        body {
+            margin: 0;
+            font-family: Arial;
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: url("https://images.unsplash.com/photo-1571902943202-507ec2618e8f") no-repeat center center/cover;
+            background-size: cover;
+        }
+
+        /* LEFT MODULE PANEL */
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .sidebar button {
+            width: 100%;
+            padding: 12px;
+            margin: 6px 0;
+            background: #222;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .sidebar button:hover {
+            background: #ff9800;
+        }
+
+        /* RIGHT CONTENT PANEL */
+        .main {
+            flex: 1;
+            min-width: 0;
+            width: calc(100vw - 280px);
+            padding: 20px;
+            overflow: auto;
+            background: rgba(255, 255, 255, 0.398);
+        }
+
+        /* SECTIONS */
+        .section {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        /* HEADER */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .back {
+            font-size: 28px;
+            cursor: pointer;
+        }
+
+        /* CARD */
+        .card {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* TABLE STYLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #f4f4f4;
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 2px;
+        }
+
+        .edit {
+            background: blue;
+            color: white;
+        }
+
+        .delete {
+            background: red;
+            color: white;
+        }
+
+        .add {
+            background: green;
+            color: white;
+        }
+
+        input,
+        select,
+        textarea {
+            padding: 8px;
+            margin: 5px 0;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2>🏋️ ADMIN PANEL</h2>
+
+        <button onclick="openModule('home')">🏠 Home</button>
+        <button onclick="window.location.href='all-users.html'">👥 All Users</button>
+        <button onclick="openModule('trainers')">🏋️ Trainers</button>
+        <button onclick="openModule('members')">👥 Members</button>
+        <button onclick="openModule('assign-members')">📋 Assign Members</button>
+        <button onclick="openModule('batches')">🏋️ Batches</button>
+        <button onclick="openModule('plans')">💰 Plans</button>
+        <button onclick="openModule('payments')">💳 Payments</button>
+        <button onclick="openModule('reports')">📊 Reports</button>
+        <button onclick="openModule('notifications')">📩 Notifications</button>
+        <button onclick="openModule('feedback')">💬 Feedback</button>
+        <button onclick="logout()">🚪 Logout</button>
+
+    </div>
+
+    <!-- MAIN AREA -->
+    <div class="main">
+
+        <!-- HOME -->
+        <div id="home" class="section active">
+            <h1>Welcome Admin 👋</h1>
+
+        </div>
+
+        <!-- TRAINERS -->
+        <div id="trainers" class="section">
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Trainers</h2>
+            </div>
+
+            <div class="card">
+                <h3>Pending Approvals</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pendingTrainerTable"></tbody>
+                </table>
+            </div>
+
+            <h3>Active Trainers</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="trainerTable"></tbody>
+            </table>
+
+        </div>
+
+        <!-- MEMBERS -->
+        <div id="members" class="section">
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Members</h2>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Batch</th>
+                        <th>Trainer</th>
+                        <th>Plan</th>
+                        <th>Expiry Date</th>
+                        <th>Approved On</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="memberTable"></tbody>
+            </table>
+        </div>
+
+        <!-- ASSIGN MEMBERS TO TRAINER -->
+        <div id="assign-members" class="section">
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Assign Members to Trainer</h2>
+            </div>
+
+            <div class="card">
+                <h3>Select Trainer</h3>
+                <select id="assignTrainerSelect" onchange="loadMembersForAssignment()">
+                    <option value="">-- Select Trainer --</option>
+                </select>
+            </div>
+
+            <div class="card" id="assignmentCard" style="display:none;">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button class="add" onclick="selectAllMembers()">Select All</button>
+                    <button class="delete" onclick="deselectAllMembers()">Deselect All</button>
+                </div>
+
+                <h3>Unassigned & Available Members</h3>
+                <div id="memberChecklistContainer"
+                    style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
+                    <!-- Checklist will be populated here -->
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <button class="add" onclick="assignSelectedMembers()"
+                        style="width: 100%; padding: 12px; font-size: 16px;">
+                        ✓ Assign Selected Members
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- BATCHES -->
+        <div id="batches" class="section">
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Batches</h2>
+            </div>
+
+            <div class="card">
+                <input id="batchNameInput" placeholder="Batch Name">
+                <input id="batchTimeInput" placeholder="Time Slot (e.g. 6:00 - 7:30 AM)">
+                <select id="trainerSelect">
+                    <option value="">Select Trainer</option>
+                </select>
+                <button class="add" onclick="createBatch()">Create Batch</button>
+            </div>
+
+            <h3>Created Batches</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Batch Name</th>
+                        <th>Time Slot</th>
+                        <th>Trainer</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody id="batchTable"></tbody>
+            </table>
+
+        </div>
+
+        <!-- PLANS -->
+        <div id="plans" class="section">
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Plans</h2>
+            </div>
+
+            <div class="card" style="padding: 15px;">
+                <input id="planNameInput" placeholder="Plan Name (e.g. 3 Months)">
+                <input id="planPriceInput" type="number" placeholder="Price">
+                <button class="add" onclick="createPlan()">Save Plan</button>
+            </div>
+
+            <h3>Available Plans</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Plan Name</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody id="plansTable"></tbody>
+            </table>
+
+        </div>
+
+        <!-- PAYMENTS -->
+        <div id="payments" class="section">
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Payments</h2>
+            </div>
+
+            <div class="card" style="padding: 0;">
+                <h3>Pending Payments</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Plan</th>
+                            <th>Method</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pendingPaymentTable"></tbody>
+                </table>
+            </div>
+
+            <div class="card" style="padding: 0;">
+                <h3>Payment History</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Plan</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentHistoryTable"></tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <!-- REPORTS -->
+        <div id="reports" class="section">
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Reports</h2>
+            </div>
+
+            <div class="card" id="reportBox"></div>
+
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div id="notifications" class="section">
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Notifications</h2>
+            </div>
+
+            <div class="card">
+                <textarea id="notifMsg" placeholder="Write message"></textarea>
+                <select id="notifTo">
+                    <option value="all">All Users</option>
+                    <option value="member">All Members</option>
+                    <option value="trainer">All Trainers</option>
+                </select>
+                <button class="add" onclick="sendNotification()">Send Notification</button>
+                <hr>
+                <div id="notifList"></div>
+            </div>
+        </div>
+
+        <!-- FEEDBACK -->
+        <div id="feedback" class="section">
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Feedback</h2>
+            </div>
+
+            <div class="card">
+                <h3>Member & Trainer Feedback</h3>
+                <div id="adminFeedbackList"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+
+        let history = [];
+
+        /* 🔑 SUPABASE SETUP */
+        const SUPABASE_URL = "https://obtagynscjhnihcslhns.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_AWEJbRPrIDWrNiG298HTlg_qMserpgr";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const markSelected = (options, val) => {
+            if (!val) return options;
+            let newOptions = options;
+            if (!newOptions.includes(`value="${val}"`)) {
+                newOptions += `<option value="${val}">${val} (Full)</option>`;
+            }
+            return newOptions.replace(`value="${val}"`, `value="${val}" selected`);
+        };
+
+        let currentUser = null;
+
+        /* AUTH */
+        async function checkAuth() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                window.location.href = "login.html";
+                return;
+            }
+            currentUser = session.user;
+
+            // Check if user is admin
+            const { data } = await supabaseClient
+                .from('profiles')
+                .select('role')
+                .eq('id', currentUser.id)
+                .single();
+
+            if (data && data.role !== 'admin') {
+                window.location.href = "login.html";
+                return;
+            }
+
+            loadReports();
+        }
+
+        /* MODULE SWITCH */
+        function openModule(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            history.push(id);
+
+            if (id === 'trainers') loadTrainers();
+            if (id === 'members') loadMembers();
+            if (id === 'assign-members') loadAssignMembersInterface();
+            if (id === 'batches') { loadBatches(); loadActiveTrainersForBatches(); }
+            if (id === 'payments') loadPayments();
+            if (id === 'plans') loadPlans();
+            if (id === 'reports') loadReports();
+            if (id === 'notifications') loadNotifications();
+            if (id === 'feedback') loadFeedback();
+        }
+
+        /* BACK BUTTON */
+        function back() {
+            history.pop();
+            let last = history[history.length - 1] || "home";
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(last).classList.add('active');
+        }
+
+        /* TRAINERS DATA */
+        async function loadTrainers() {
+            let table = document.getElementById("trainerTable");
+            let pendingTable = document.getElementById("pendingTrainerTable");
+            table.innerHTML = "";
+            if (pendingTable) pendingTable.innerHTML = "";
+
+            const { data: batches } = await supabaseClient.from('batches').select('*');
+            let batchOptions = `<option value="">Select Batch</option>`;
+            if (batches) {
+                batches.forEach(b => {
+                    batchOptions += `<option value="${b.name}">${b.name}</option>`;
+                });
+            }
+
+            const { data, error } = await supabaseClient
+                .from('profiles')
+                .select('*, trainers(*)')
+                .eq('role', 'trainer');
+
+            if (data) {
+                data.forEach(t => {
+                    const trainerData = (t.trainers && t.trainers.length > 0) ? t.trainers[0] : {};
+                    let currentBatch = trainerData.batch || '';
+                    let batchSelect = `<select id="trainer_batch_${t.id}">${markSelected(batchOptions, currentBatch)}</select>`;
+
+                    let row = `
+            <tr>
+            <td>${t.full_name}</td>
+            <td>${t.phone || 'N/A'}</td>
+            ${t.status === 'Pending' ? `<td></td>` : `<td>${batchSelect}</td>`}
+            <td>${t.status || 'Active'}</td>
+            <td>
+            ${t.status === 'Pending' ? `<button class="add" onclick="approveProfile('${t.id}')">Approve</button>` : `<button class="edit" onclick="assignTrainerBatch('${t.id}')">Assign Batch</button>`}
+            <button class="delete" onclick="deleteProfile('${t.id}')">Delete</button>
+            </td>
+            </tr>
+            `;
+                    if (t.status === 'Pending') {
+                        if (pendingTable) pendingTable.innerHTML += row;
+                    } else {
+                        table.innerHTML += row;
+                    }
+                });
+            }
+        }
+
+        async function assignTrainerBatch(id) {
+            let batch = document.getElementById(`trainer_batch_${id}`).value;
+
+            // 1. Update trainers table
+            const { error: tErr } = await supabaseClient.from('trainers').update({ batch: batch }).eq('id', id);
+            if (tErr) return alert("Error updating trainer: " + tErr.message);
+
+            // 2. Sync batches table
+            // First, remove this trainer from any batch they were previously assigned to
+            await supabaseClient.from('batches').update({ trainer_id: null }).eq('trainer_id', id);
+
+            // Then, if a batch is selected, assign this trainer to that batch
+            if (batch) {
+                const { error: bErr } = await supabaseClient.from('batches').update({ trainer_id: id }).eq('name', batch);
+                if (bErr) console.error("Error updating batch trainer_id:", bErr);
+            }
+
+            alert("Batch assigned successfully!");
+            loadTrainers();
+            if (document.getElementById('batches').classList.contains('active')) loadBatches();
+        }
+
+        async function deleteProfile(id) {
+            if (confirm("Are you sure?")) {
+                const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
+                if (error) alert("Error deleting: " + error.message);
+                else {
+                    loadTrainers();
+                    loadMembers();
+                }
+            }
+        }
+
+        async function approveProfile(id) {
+            if (confirm("Approve this user?")) {
+                // 1. Get user role first
+                const { data: profileData } = await supabaseClient
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', id)
+                    .single();
+
+                if (!profileData) return alert("User profile not found");
+
+                // 2. Update status in profiles
+                const { error } = await supabaseClient
+                    .from('profiles')
+                    .update({ status: 'Active', approved_at: new Date().toISOString() })
+                    .eq('id', id);
+
+                if (error) {
+                    alert("Error approving: " + error.message);
+                    return;
+                }
+
+                // 3. Ensure record exists in the appropriate table
+                if (profileData.role === 'member') {
+                    const { error: mErr } = await supabaseClient
+                        .from('members')
+                        .upsert([{ id: id }], { onConflict: 'id' });
+                    if (mErr) console.error("Error ensuring member record:", mErr);
+                } else if (profileData.role === 'trainer') {
+                    const { error: tErr } = await supabaseClient
+                        .from('trainers')
+                        .upsert([{ id: id }], { onConflict: 'id' });
+                    if (tErr) console.error("Error ensuring trainer record:", tErr);
+                }
+
+                alert("User approved successfully!");
+                loadTrainers();
+                loadMembers();
+            }
+        }
+
+        /* MEMBERS DATA */
+        async function loadMembers() {
+            let table = document.getElementById("memberTable");
+            table.innerHTML = "";
+
+            const { data: memberProfiles, error: memberProfileErr } = await supabaseClient
+                .from('profiles')
+                .select('id, full_name, status, approved_at')
+                .eq('role', 'member');
+
+            const { data: batches, error: batchErr } = await supabaseClient
+                .from('batches')
+                .select('*');
+
+            // Build batch->trainer map from batches table
+            let batchTrainerMap = {};
+            if (batches) {
+                batches.forEach(b => {
+                    if (b.trainer_id) batchTrainerMap[b.name] = b.trainer_id;
+                });
+            }
+
+            // Fetch active trainers for dropdown
+            const { data: trainers } = await supabaseClient
+                .from('profiles')
+                .select('id, full_name')
+                .eq('role', 'trainer')
+                .eq('status', 'Active');
+
+            let trainerOptions = `<option value="">Select Trainer</option>`;
+            let trainerMap = {};
+            if (trainers) {
+                trainers.forEach(t => {
+                    trainerOptions += `<option value="${t.id}">${t.full_name}</option>`;
+                    trainerMap[t.id] = t.full_name;
+                });
+            }
+
+            const memberIds = memberProfiles ? memberProfiles.map(m => m.id) : [];
+            const { data: memberMeta } = await supabaseClient
+                .from('members')
+                .select('id, batch, plan, expiry_date, payment_status, payment_method, trainer_id')
+                .in('id', memberIds);
+
+            let memberMetaMap = {};
+            if (memberMeta) {
+                memberMeta.forEach(meta => {
+                    memberMetaMap[meta.id] = meta;
+                });
+            }
+
+            const { data: membersForCount } = await supabaseClient
+                .from('members')
+                .select('batch');
+            let batchCounts = {};
+            if (membersForCount) {
+                membersForCount.forEach(m => {
+                    if (m.batch) {
+                        batchCounts[m.batch] = (batchCounts[m.batch] || 0) + 1;
+                    }
+                });
+            }
+
+            let batchOptions = `<option value="">Select Batch</option>`;
+            if (batches) {
+                batches.forEach(b => {
+                    let count = batchCounts[b.name] || 0;
+                    if (count < 20) {
+                        batchOptions += `<option value="${b.name}">${b.name}</option>`;
+                    }
+                });
+            }
+
+            if (memberProfileErr) {
+                console.error('Error loading member profiles:', memberProfileErr);
+                table.innerHTML = `<tr><td colspan="8">Error loading members: ${memberProfileErr.message}</td></tr>`;
+                return;
+            }
+
+            if (memberProfiles) {
+                memberProfiles.forEach(m => {
+                    const memberData = memberMetaMap[m.id] || {};
+
+                    if (m.status === 'Active') {
+                        let currentBatch = memberData.batch || '';
+                        // Derive trainer from batch
+                        let currentTrainerId = batchTrainerMap[currentBatch] || '';
+                        let planInfo = memberData.plan || 'N/A';
+                        let dbExpiry = memberData.expiry || memberData.expiry_date;
+                        let expiryInfo = dbExpiry ? new Date(dbExpiry).toLocaleDateString() : 'N/A';
+                        let approvedInfo = m.approved_at ? new Date(m.approved_at).toLocaleDateString() : 'N/A';
+
+                        table.innerHTML += `
+                        <tr>
+                        <td>${m.full_name}</td>
+                        <td>
+                            <select id="batch_${m.id}">
+                                ${markSelected(batchOptions, currentBatch)}
+                            </select>
+                        </td>
+                        <td>
+                            <select id="trainer_${m.id}">
+                                ${markSelected(trainerOptions, currentTrainerId)}
+                            </select>
+                        </td>
+                        <td>${planInfo}</td>
+                        <td>${expiryInfo}</td>
+                        <td>${approvedInfo}</td>
+                        <td>${m.status}</td>
+                        <td>
+                        <button class="edit" onclick="assignMember('${m.id}')">Assign</button>
+                        <button class="edit" style="background: #ff9800;" onclick="notifyRenewal('${m.id}')">Remind</button>
+                        <button class="delete" onclick="deleteProfile('${m.id}')">Delete</button>
+                        </td>
+                        </tr>
+                        `;
+                    } else {
+                        let planInfo = memberData.plan || 'N/A';
+                        let dbExpiry = memberData.expiry || memberData.expiry_date;
+                        let expiryInfo = dbExpiry ? new Date(dbExpiry).toLocaleDateString() : 'N/A';
+                        let approvedInfo = m.approved_at ? new Date(m.approved_at).toLocaleDateString() : '—';
+                        let currentBatch = memberData.batch || '';
+                        let currentTrainerId = batchTrainerMap[currentBatch] || '';
+                        let assignedTrainer = trainerMap[currentTrainerId] || 'Unassigned';
+
+                        table.innerHTML += `
+                        <tr>
+                        <td>${m.full_name}</td>
+                        <td>
+                            <select id="batch_${m.id}">
+                                ${markSelected(batchOptions, memberData.batch || '')}
+                            </select>
+                        </td>
+                        <td>
+                            <select id="trainer_${m.id}">
+                                ${markSelected(trainerOptions, currentTrainerId)}
+                            </select>
+                        </td>
+                        <td>${planInfo}</td>
+                        <td>${expiryInfo}</td>
+                        <td>${approvedInfo}</td>
+                        <td>${m.status || 'Active'}</td>
+                        <td>
+                        ${m.status === 'Pending' ? `<button class="add" onclick="approveProfile('${m.id}')">Approve</button>` : `<button class="edit" style="background: #ff9800;" onclick="notifyRenewal('${m.id}')">Remind</button>`}
+                        <button class="delete" onclick="deleteProfile('${m.id}')">Delete</button>
+                        </td>
+                        </tr>
+                        `;
+                    }
+                });
+            }
+        }
+
+        async function assignMember(id) {
+            const batchEl = document.getElementById(`batch_${id}`);
+            const trainerEl = document.getElementById(`trainer_${id}`);
+            let batch = batchEl ? batchEl.value : null;
+            let trainerId = trainerEl ? trainerEl.value : null;
+
+            if (!batch && !trainerId) return alert("Please select a batch or trainer.");
+
+            // Check batch capacity if batch selected
+            if (batch) {
+                const { count, error: countErr } = await supabaseClient
+                    .from('members')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('batch', batch);
+
+                if (countErr) {
+                    return alert("Error checking batch capacity: " + countErr.message);
+                }
+
+                if (count >= 20) {
+                    return alert(`Cannot assign to ${batch}. Maximum capacity of 20 members reached.`);
+                }
+            }
+
+            // Build update payload
+            const updateData = {};
+            if (batch) updateData.batch = batch;
+            if (trainerId) updateData.trainer_id = trainerId;
+
+            const { error } = await supabaseClient
+                .from('members')
+                .update(updateData)
+                .eq('id', id);
+
+            if (error) alert("Error assigning: " + error.message);
+            else {
+                alert("Assigned successfully!");
+                loadMembers();
+            }
+        }
+
+        async function notifyRenewal(id) {
+            if (confirm("Send plan renewal reminder to this member?")) {
+                const payload = {
+                    sender_id: currentUser.id,
+                    receiver_id: id,
+                    receiver_role: 'member',
+                    message: "Reminder: Your gym membership plan is expiring soon or has already expired. Please renew your plan to continue your fitness journey!",
+                    type: 'from_admin'
+                };
+
+                const { error } = await supabaseClient.from('notifications').insert([payload]);
+                if (error) alert("Error sending reminder: " + error.message);
+                else alert("Renewal reminder sent successfully!");
+            }
+        }
+
+        /* ASSIGN MEMBERS TO TRAINER */
+        let selectedMembersForAssignment = [];
+
+        async function loadAssignMembersInterface() {
+            selectedMembersForAssignment = [];
+            const { data: trainers } = await supabaseClient
+                .from('profiles')
+                .select('id, full_name')
+                .eq('role', 'trainer')
+                .eq('status', 'Active');
+
+            let select = document.getElementById("assignTrainerSelect");
+            select.innerHTML = `<option value="">-- Select Trainer --</option>`;
+            if (trainers) {
+                trainers.forEach(t => {
+                    select.innerHTML += `<option value="${t.id}">${t.full_name}</option>`;
+                });
+            }
+            document.getElementById("assignmentCard").style.display = "none";
+        }
+
+        async function loadMembersForAssignment() {
+            let trainerId = document.getElementById("assignTrainerSelect").value;
+            if (!trainerId) {
+                document.getElementById("assignmentCard").style.display = "none";
+                return;
+            }
+
+            selectedMembersForAssignment = [];
+            document.getElementById("assignmentCard").style.display = "block";
+
+            // Get ALL members (Active + Pending) — fallback if role casing differs
+            let { data: memberProfiles, error: memErr } = await supabaseClient
+                .from('profiles')
+                .select('id, full_name, status')
+                .or('role.eq.member,role.eq.Member');
+
+            if ((!memberProfiles || memberProfiles.length === 0) && !memErr) {
+                const { data: fallbackMembers } = await supabaseClient
+                    .from('profiles')
+                    .select('id, full_name, status')
+                    .neq('role', 'trainer')
+                    .neq('role', 'admin');
+                if (fallbackMembers && fallbackMembers.length > 0) {
+                    memberProfiles = fallbackMembers;
+                }
+            }
+
+            let memberMetaMap = {};
+            if (memberProfiles && memberProfiles.length > 0) {
+                const { data: memberMeta, error: memberMetaErr } = await supabaseClient
+                    .from('members')
+                    .select('id, batch, plan, expiry_date')
+                    .in('id', memberProfiles.map(m => m.id));
+
+                if (memberMetaErr) {
+                    console.error('Error loading member metadata:', memberMetaErr);
+                } else if (memberMeta) {
+                    memberMeta.forEach(meta => {
+                        memberMetaMap[meta.id] = meta;
+                    });
+                }
+            }
+
+            if (memErr) {
+                console.error("Error loading members:", memErr);
+            }
+
+            // Get the trainer's name for display
+            const { data: trainerProfile } = await supabaseClient
+                .from('profiles')
+                .select('full_name')
+                .eq('id', trainerId)
+                .single();
+            let trainerName = trainerProfile ? trainerProfile.full_name : 'Selected Trainer';
+
+            let html = '';
+            if (memberProfiles && memberProfiles.length > 0) {
+                memberProfiles.forEach(m => {
+                    const memberData = memberMetaMap[m.id] || {};
+
+                    const batch = memberData.batch || 'No Batch';
+                    const plan = memberData.plan || 'No Plan';
+                    const statusColor = m.status === 'Active' ? '#39ff14' : '#ff9800';
+
+                    html += `
+                        <div style="padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; background: #f9f9f9;">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" class="memberCheckbox" value="${m.id}" onchange="toggleMemberSelection('${m.id}')">
+                                <div>
+                                    <strong>${m.full_name}</strong>
+                                    <span style="color: ${statusColor}; font-size: 11px; margin-left: 6px;">(${m.status || 'Pending'})</span><br>
+                                    <small>Batch: ${batch} | Plan: ${plan}</small>
+                                </div>
+                            </label>
+                        </div>
+                    `;
+                });
+            } else {
+                html = '<p style="padding: 10px; text-align: center; color: #999;">No members available</p>';
+            }
+
+            document.getElementById("memberChecklistContainer").innerHTML = html;
+        }
+
+        function toggleMemberSelection(memberId) {
+            const checkbox = document.querySelector(`.memberCheckbox[value="${memberId}"]`);
+            if (checkbox.checked) {
+                if (!selectedMembersForAssignment.includes(memberId)) {
+                    selectedMembersForAssignment.push(memberId);
+                }
+            } else {
+                selectedMembersForAssignment = selectedMembersForAssignment.filter(id => id !== memberId);
+            }
+        }
+
+        function selectAllMembers() {
+            document.querySelectorAll('.memberCheckbox').forEach(checkbox => {
+                checkbox.checked = true;
+                const memberId = checkbox.value;
+                if (!selectedMembersForAssignment.includes(memberId)) {
+                    selectedMembersForAssignment.push(memberId);
+                }
+            });
+        }
+
+        function deselectAllMembers() {
+            document.querySelectorAll('.memberCheckbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            selectedMembersForAssignment = [];
+        }
+
+        async function assignSelectedMembers() {
+            let trainerId = document.getElementById("assignTrainerSelect").value;
+
+            if (!trainerId) {
+                alert("Please select a trainer first");
+                return;
+            }
+
+            if (selectedMembersForAssignment.length === 0) {
+                alert("Please select at least one member to assign");
+                return;
+            }
+
+            if (!confirm(`Assign ${selectedMembersForAssignment.length} member(s) to this trainer?`)) {
+                return;
+            }
+
+            let successCount = 0;
+            let errorCount = 0;
+
+            for (let memberId of selectedMembersForAssignment) {
+                // Assign member's batch to the trainer's batch
+                // Get the trainer's batch from batches table
+                const { data: trainerBatch } = await supabaseClient
+                    .from('batches')
+                    .select('name')
+                    .eq('trainer_id', trainerId)
+                    .limit(1)
+                    .single();
+
+                let updateData = {};
+                if (trainerBatch && trainerBatch.name) {
+                    updateData.batch = trainerBatch.name;
+                }
+
+                const { error } = await supabaseClient
+                    .from('members')
+                    .update(updateData)
+                    .eq('id', memberId);
+
+                if (error) {
+                    console.error("Error assigning member:", error);
+                    errorCount++;
+                } else {
+                    successCount++;
+                }
+            }
+
+            alert(`Assignment complete! ✓ Assigned: ${successCount} | ✗ Failed: ${errorCount}`);
+            loadMembersForAssignment();
+            selectedMembersForAssignment = [];
+        }
+
+        /* BATCHES DATA */
+        async function loadActiveTrainersForBatches() {
+            const { data, error } = await supabaseClient
+                .from('profiles')
+                .select('id, full_name')
+                .eq('role', 'trainer')
+                .eq('status', 'Active');
+
+            if (data) {
+                let select = document.getElementById("trainerSelect");
+                select.innerHTML = `<option value="">Select Trainer</option>`;
+                data.forEach(t => {
+                    select.innerHTML += `<option value="${t.id}">${t.full_name}</option>`;
+                });
+            }
+        }
+
+        async function loadBatches() {
+            let table = document.getElementById("batchTable");
+            if (!table) return;
+            table.innerHTML = "";
+
+            const { data, error } = await supabaseClient
+                .from('batches')
+                .select(`
+            *,
+            profiles (full_name)
+        `);
+
+            if (data) {
+                data.forEach(b => {
+                    table.innerHTML += `
+            <tr>
+            <td>${b.name}</td>
+            <td>${b.time_slot || 'N/A'}</td>
+            <td>${b.profiles ? b.profiles.full_name : 'No Trainer'}</td>
+            <td>${new Date(b.created_at).toLocaleDateString()}</td>
+            </tr>
+            `;
+                });
+            }
+        }
+
+        async function createBatch() {
+            let name = document.getElementById("batchNameInput").value;
+            let time = document.getElementById("batchTimeInput").value;
+            let trainerId = document.getElementById("trainerSelect").value;
+            if (!name.trim()) return alert("Enter a batch name");
+
+            let insertData = { name: name, time_slot: time };
+            if (trainerId) insertData.trainer_id = trainerId;
+
+            const { error } = await supabaseClient
+                .from('batches')
+                .insert([insertData]);
+
+            if (error) {
+                if (error.message.includes('row-level security') || error.code === '42501') {
+                    alert("Error: Row Level Security is blocking this action. Please run the following SQL in your Supabase SQL Editor:\n\nDROP POLICY IF EXISTS \"Allow public read on batches\" ON public.batches;\nCREATE POLICY \"Allow full access on batches\" ON public.batches FOR ALL USING (true) WITH CHECK (true);");
+                } else {
+                    alert("Error creating batch: " + error.message);
+                }
+            } else {
+                // Sync trainer table if a trainer was selected
+                if (trainerId) {
+                    const { error: tErr } = await supabaseClient.from('trainers').update({ batch: name }).eq('id', trainerId);
+                    if (tErr) console.error("Error updating trainer batch:", tErr);
+                }
+
+                document.getElementById("batchNameInput").value = "";
+                document.getElementById("batchTimeInput").value = "";
+                document.getElementById("trainerSelect").value = "";
+                loadBatches();
+                alert("Batch created successfully!");
+            }
+        }
+
+        /* PAYMENTS DATA */
+        async function loadPayments() {
+            let pendingTable = document.getElementById("pendingPaymentTable");
+            let historyTable = document.getElementById("paymentHistoryTable");
+            if (!pendingTable || !historyTable) return;
+            pendingTable.innerHTML = "";
+            historyTable.innerHTML = "";
+
+            const { data: memberProfiles, error: memberErr } = await supabaseClient
+                .from('profiles')
+                .select('id, full_name, status, approved_at')
+                .eq('role', 'member');
+
+            const memberIds = memberProfiles ? memberProfiles.map(m => m.id) : [];
+            const { data: memberMeta, error: memberMetaErr } = await supabaseClient
+                .from('members')
+                .select('id, batch, plan, expiry_date, payment_status, payment_method, trainer_id')
+                .in('id', memberIds);
+
+            let memberMap = {};
+            if (memberMeta) {
+                memberMeta.forEach(meta => {
+                    memberMap[meta.id] = meta;
+                });
+            }
+
+            if (memberErr) {
+                console.error('Error loading member profiles:', memberErr);
+            }
+            if (memberMetaErr) {
+                console.error('Error loading member metadata:', memberMetaErr);
+            }
+
+            if (memberProfiles) {
+                memberProfiles.forEach(m => {
+                    const mDetails = memberMap[m.id] || {};
+                    let pStatus = mDetails.payment_status || 'Pending';
+                    let pMethod = mDetails.payment_method || 'None';
+                    if (pStatus !== 'Paid' && mDetails.plan && mDetails.plan !== 'N/A') {
+                        let methodDisplay = pMethod;
+                        if (pMethod.includes('UTR:')) {
+                            let match = pMethod.match(/UTR:\s*(\d+)/);
+                            if (match) {
+                                methodDisplay = `💳 Online <br><span style="background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-family: monospace; font-size: 13px; border: 1px solid #ffeeba; display: inline-block; margin-top: 4px;">UTR: ${match[1]}</span>`;
+                            }
+                        } else if (pMethod.includes('Offline')) {
+                            methodDisplay = `🏦 <span style="color: #004085; background: #cce5ff; padding: 2px 6px; border-radius: 4px; font-size: 13px; font-weight: bold; border: 1px solid #b8daff; display: inline-block;">Offline Desk</span>`;
+                        }
+
+                        pendingTable.innerHTML += `
+                        <tr>
+                            <td><b>${m.full_name}</b></td>
+                            <td><span style="background: #e2e3e5; color: #383d41; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 13px;">${mDetails.plan}</span></td>
+                            <td>${methodDisplay}</td>
+                            <td>
+                                <button class="add" onclick="markPaid('${m.id}')" style="background: #28a745; color: white; padding: 6px 12px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; display: inline-block;">✓ Approve & Activate</button>
+                            </td>
+                        </tr>
+                        `;
+                    }
+                });
+            }
+
+            // Load History
+            const { data: historyData, error: historyErr } = await supabaseClient
+                .from('payments')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (historyErr) {
+                console.error('Error loading payment history:', historyErr);
+                historyTable.innerHTML = `<tr><td colspan="6">Error loading payment history: ${historyErr.message}</td></tr>`;
+            } else if (historyData && historyData.length > 0) {
+                const historyMemberIds = [...new Set(historyData.map(p => p.member_id))];
+                const { data: historyProfiles, error: historyProfilesErr } = await supabaseClient
+                    .from('profiles')
+                    .select('id, full_name')
+                    .in('id', historyMemberIds);
+
+                let historyProfileMap = {};
+                if (historyProfiles) {
+                    historyProfiles.forEach(profile => {
+                        historyProfileMap[profile.id] = profile.full_name;
+                    });
+                }
+
+                historyData.forEach(p => {
+                    let mDetails = memberMap[p.member_id] || {};
+                    let method = mDetails.payment_method || 'None';
+
+                    historyTable.innerHTML += `
+                    <tr>
+                    <td>${historyProfileMap[p.member_id] || 'Unknown'}</td>
+                    <td>${p.plan || 'N/A'}</td>
+                    <td>₹${parseFloat(p.amount || 0).toFixed(2)}</td>
+                    <td>${method}</td>
+                    <td>${p.status || 'N/A'}</td>
+                    <td>${p.created_at ? new Date(p.created_at).toLocaleDateString() : 'N/A'}</td>
+                    </tr>
+                    `;
+                });
+            } else {
+                historyTable.innerHTML = `<tr><td colspan="6" style="text-align:center;">No payment history found</td></tr>`;
+            }
+        }
+
+        async function markPaid(id) {
+            if (confirm("Confirm payment received?")) {
+
+                // 1. Fetch plan and payment_method from members table
+                const { data: memberData } = await supabaseClient
+                    .from('members')
+                    .select('plan, payment_method')
+                    .eq('id', id)
+                    .single();
+
+                if (!memberData) return alert("Member details not found.");
+
+                let planName = memberData.plan;
+                let method = memberData.payment_method || 'Offline';
+
+                // 2. Fetch plan price
+                let amount = 0;
+                if (planName && planName !== 'N/A') {
+                    const { data: planData } = await supabaseClient
+                        .from('plans')
+                        .select('price')
+                        .eq('name', planName)
+                        .single();
+                    if (planData) {
+                        let priceVal = planData.price;
+                        if (typeof priceVal === 'string') {
+                            amount = parseFloat(priceVal.replace(/[^0-9.]/g, '')) || 0;
+                        } else {
+                            amount = priceVal || 0;
+                        }
+                    }
+                }
+
+                // 3. Update Member
+                const { error: memberErr } = await supabaseClient
+                    .from('members')
+                    .update({ payment_status: 'Paid', payment_method: method })
+                    .eq('id', id);
+
+                if (!memberErr) {
+                    await supabaseClient.from('profiles').update({ status: 'Active' }).eq('id', id);
+
+                    // 4. Record in payments table
+                    await supabaseClient.from('payments').insert([{
+                        member_id: id,
+                        plan: planName,
+                        amount: amount,
+                        status: 'Paid'
+                    }]);
+                }
+
+                if (memberErr) alert("Error updating: " + memberErr.message);
+                else {
+                    alert("Payment processed!");
+                    loadPayments();
+                    loadMembers();
+                }
+            }
+        }
+
+        /* PLANS DATA */
+        async function loadPlans() {
+            let table = document.getElementById("plansTable");
+            if (!table) return;
+            table.innerHTML = "";
+
+            const { data, error } = await supabaseClient
+                .from('plans')
+                .select('*');
+
+            if (data) {
+                data.forEach(p => {
+                    table.innerHTML += `
+            <tr>
+            <td>${p.name}</td>
+            <td>₹${p.price}</td>
+            </tr>
+            `;
+                });
+            }
+        }
+
+        async function createPlan() {
+            let name = document.getElementById("planNameInput").value;
+            let price = document.getElementById("planPriceInput").value;
+            if (!name.trim() || !price.trim()) return alert("Enter plan name and price");
+
+            const { error } = await supabaseClient
+                .from('plans')
+                .insert([{ name: name, price: price }]);
+
+            if (error) {
+                alert("Error creating plan: " + error.message);
+            } else {
+                document.getElementById("planNameInput").value = "";
+                document.getElementById("planPriceInput").value = "";
+                loadPlans();
+            }
+        }
+
+        /* REPORT */
+        async function loadReports() {
+            const { count: membersCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'member');
+            const { count: activeCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'member').eq('status', 'Active');
+
+            document.getElementById("reportBox").innerHTML = `
+    Total Members: ${membersCount || 0}<br>
+    Active: ${activeCount || 0}<br>
+    Pending: ${(membersCount || 0) - (activeCount || 0)}
+    `;
+        }
+
+        /* NOTIFICATIONS */
+        async function sendNotification() {
+            let msg = document.getElementById("notifMsg").value;
+            let to = document.getElementById("notifTo").value;
+            if (!msg.trim()) return alert("Enter message");
+
+            const payload = {
+                sender_id: currentUser.id,
+                message: msg,
+                type: 'from_admin',
+                receiver_role: to === 'all' ? null : to
+            };
+
+            const { error } = await supabaseClient.from('notifications').insert([payload]);
+            if (error) alert("Error: " + error.message);
+            else {
+                alert("Notification Sent!");
+                document.getElementById("notifMsg").value = "";
+                loadNotifications();
+            }
+        }
+
+        async function loadNotifications() {
+            const { data } = await supabaseClient
+                .from('notifications')
+                .select('*, profiles!sender_id(full_name)')
+                .order('created_at', { ascending: false });
+
+            if (data) {
+                let html = '';
+                data.forEach(n => {
+                    let target = n.receiver_role ? n.receiver_role.charAt(0).toUpperCase() + n.receiver_role.slice(1) : 'All';
+                    let sender = n.profiles ? n.profiles.full_name : 'System';
+                    html += `<p><b>From ${sender} to ${target}:</b> ${n.message} <br><small>${new Date(n.created_at).toLocaleString()}</small></p><hr>`;
+                });
+                document.getElementById("notifList").innerHTML = html || "No notifications";
+            }
+        }
+
+        /* FEEDBACK */
+        async function loadFeedback() {
+            const { data } = await supabaseClient
+                .from('feedback')
+                .select('*, profiles(full_name, role)')
+                .order('created_at', { ascending: false });
+
+            if (data) {
+                let html = '';
+                data.forEach(f => {
+                    html += `<p><b>${f.profiles ? f.profiles.full_name : 'User'} (${f.profiles ? f.profiles.role : 'N/A'}):</b> ${f.message} <br><small>${new Date(f.created_at).toLocaleString()}</small></p><hr>`;
+                });
+                document.getElementById("adminFeedbackList").innerHTML = html || "No feedback received";
+            }
+        }
+
+        /* LOGOUT */
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            window.location.href = "login.html";
+        }
+
+        /* INIT */
+        checkAuth();
+
+    </script>
+
+</body>
+
+</html>

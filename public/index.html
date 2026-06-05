@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PowerFit Gym — Transform Your Body</title>
+  <meta name="description"
+    content="PowerFit Gym Management System. Join our premium fitness community with expert trainers, modern equipment, and personalized training programs.">
+
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* ── HEADER ── */
+    .site-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      padding: 0 5%;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      animation: fadeInDown 0.6s ease;
+    }
+
+    .header-logo {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: -0.03em;
+    }
+
+    .header-logo .accent {
+      color: var(--accent);
+    }
+
+    .header-nav ul {
+      display: flex;
+      list-style: none;
+      gap: 8px;
+    }
+
+    .header-nav ul li a {
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      border-radius: var(--radius-full);
+      transition: all var(--transition);
+      display: inline-block;
+    }
+
+    .header-nav ul li a:hover {
+      color: var(--text-primary);
+      background: var(--bg-glass-hover);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .menu-btn {
+      display: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: var(--text-primary);
+      background: none;
+      border: none;
+      padding: 8px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 20px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to bottom, rgba(10, 10, 15, 0.6), rgba(10, 10, 15, 0.9)),
+        url("a-black-and-white-of-a-gym-photo.jpg") center/cover no-repeat;
+      z-index: 0;
+    }
+
+    /* Animated gradient orbs */
+    .hero::after {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      top: -100px;
+      right: -100px;
+      animation: floatBg 15s ease-in-out infinite;
+      z-index: 0;
+    }
+
+    .hero-orb {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%);
+      bottom: -100px;
+      left: -100px;
+      animation: floatBg 12s ease-in-out infinite reverse;
+      z-index: 0;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      animation: fadeInUp 1s ease;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    .hero-badge .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .hero h1 {
+      font-size: 64px;
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #fff 0%, #ccc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero h1 .gradient-text {
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: 18px;
+      color: var(--text-secondary);
+      margin-bottom: 36px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.7;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* ── SECTIONS ── */
+    .content-section {
+      padding: 100px 8%;
+      text-align: center;
+      position: relative;
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 16px;
+    }
+
+    .section-desc {
+      max-width: 600px;
+      margin: 0 auto 48px;
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── FEATURES GRID ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .feature-card {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px 24px;
+      text-align: left;
+      transition: all var(--transition);
+    }
+
+    .feature-card:hover {
+      background: var(--bg-glass-hover);
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--accent-glow);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 16px;
+    }
+
+    .feature-card h3 {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .feature-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ── CONTACT SECTION ── */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .contact-item {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      transition: all var(--transition);
+    }
+
+    .contact-item:hover {
+      background: var(--bg-glass-hover);
+      border-color: var(--border-hover);
+    }
+
+    .contact-item .icon {
+      font-size: 24px;
+      color: var(--accent);
+    }
+
+    .contact-item .label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .contact-item .value {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    /* ── FOOTER ── */
+    .site-footer {
+      padding: 32px 8%;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .site-footer p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:1024px) {
+      .hero h1 {
+        font-size: 48px;
+      }
+    }
+
+    @media(max-width:768px) {
+      .menu-btn {
+        display: block;
+      }
+
+      .header-nav {
+        position: fixed;
+        top: 72px;
+        right: -100%;
+        width: 260px;
+        height: calc(100vh - 72px);
+        background: var(--bg-secondary);
+        border-left: 1px solid var(--border);
+        padding: 20px;
+        transition: right var(--transition);
+        z-index: 999;
+      }
+
+      .header-nav.open {
+        right: 0;
+      }
+
+      .header-nav ul {
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .header-nav ul li a {
+        display: block;
+        padding: 12px 16px;
+        border-radius: var(--radius-sm);
+      }
+
+      .header-actions {
+        display: none;
+      }
+
+      .hero h1 {
+        font-size: 36px;
+      }
+
+      .hero-subtitle {
+        font-size: 16px;
+      }
+
+      .section-title {
+        font-size: 28px;
+      }
+
+      .content-section {
+        padding: 70px 5%;
+      }
+    }
+
+    @media(max-width:480px) {
+      .hero h1 {
+        font-size: 28px;
+      }
+
+      .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+
+    <div class="header-logo">
+      <i class="fas fa-dumbbell" style="color: var(--accent);"></i>
+      Power<span class="accent">Fit</span>
+    </div>
+
+    <button class="menu-btn" onclick="toggleMenu()" aria-label="Toggle menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <nav class="header-nav" id="navMenu">
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <a href="login.html" class="btn-secondary btn-sm">Log In</a>
+      <a href="register.html" class="btn-primary btn-sm">Get Started</a>
+    </div>
+
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="home">
+    <div class="hero-orb"></div>
+    <div class="hero-content">
+
+      <div class="hero-badge">
+        <span class="dot"></span>
+        Now Accepting New Members
+      </div>
+
+      <h1>Transform Your<br><span class="gradient-text">Body & Mind</span></h1>
+
+      <p class="hero-subtitle">
+        Join Belagavi's premier fitness community. Expert trainers, world-class equipment, and personalized programs to
+        help you reach your goals.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="register.html" class="btn-primary">
+          <i class="fas fa-rocket"></i> Join Now
+        </a>
+        <a href="#about" class="btn-secondary">
+          <i class="fas fa-play"></i> Learn More
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="content-section reveal" id="about">
+
+    <span class="section-label"><i class="fas fa-star"></i> Our Story</span>
+    <h2 class="section-title">About PowerFit</h2>
+    <p class="section-desc">
+      Welcome to PowerFit Gym, where dedication meets transformation.
+      We provide a motivating environment with expert trainers to help you achieve your fitness goals.
+      Whether you're a beginner or a pro, we have the tools and guidance to push your limits.
+    </p>
+
+  </section>
+
+  <!-- FEATURES -->
+  <section class="content-section reveal" id="features">
+
+    <span class="section-label"><i class="fas fa-bolt"></i> Why Choose Us</span>
+    <h2 class="section-title">Everything You Need</h2>
+    <p class="section-desc">
+      Our comprehensive gym management system makes your fitness journey seamless from start to finish.
+    </p>
+
+    <div class="features-grid">
+
+      <div class="feature-card">
+        <div class="feature-icon">🏋️</div>
+        <h3>Expert Trainers</h3>
+        <p>Certified trainers who create personalized workout plans and guide you every step of the way.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <h3>Flexible Schedules</h3>
+        <p>Multiple batch timings to fit your busy lifestyle. Morning, afternoon, and evening sessions available.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">💳</div>
+        <h3>Easy Payments</h3>
+        <p>Convenient online and offline payment options. Track your membership status in real-time.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Progress Tracking</h3>
+        <p>Monitor your fitness journey with detailed dashboards and performance insights.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">💬</div>
+        <h3>Direct Communication</h3>
+        <p>Stay connected with your trainer and admin through built-in notifications and feedback.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Affordable Plans</h3>
+        <p>Flexible membership plans to suit every budget. From monthly to yearly options.</p>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- CONTACT -->
+  <section class="content-section reveal" id="contact">
+
+    <span class="section-label"><i class="fas fa-envelope"></i> Get In Touch</span>
+    <h2 class="section-title">Contact Us</h2>
+    <p class="section-desc">
+      Have questions? We'd love to hear from you. Visit us or reach out through any of the channels below.
+    </p>
+
+    <div class="contact-grid">
+      <div class="contact-item">
+        <span class="icon"><i class="fas fa-map-marker-alt"></i></span>
+        <span class="label">Location</span>
+        <span class="value">Belagavi, Karnataka</span>
+      </div>
+      <div class="contact-item">
+        <span class="icon"><i class="fas fa-user-shield"></i></span>
+        <span class="label">Admin</span>
+        <span class="value">Chetan</span>
+      </div>
+      <div class="contact-item">
+        <span class="icon"><i class="fas fa-user"></i></span>
+        <span class="label">Trainers</span>
+        <span class="value">Praveen & Girish</span>
+      </div>
+      <div class="contact-item">
+        <span class="icon"><i class="fas fa-envelope"></i></span>
+        <span class="label">Email</span>
+        <span class="value">powergym@email.com</span>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <p>© 2026 PowerFit Gym Management System. All rights reserved.</p>
+  </footer>
+
+  <script>
+
+    /* MOBILE MENU */
+    function toggleMenu() {
+      document.getElementById("navMenu").classList.toggle("open");
+    }
+
+    /* SCROLL REVEAL */
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    /* SMOOTH SCROLL FOR NAV LINKS */
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+          // Close mobile menu
+          document.getElementById("navMenu").classList.remove("open");
+        }
+      });
+    });
+
+    /* HEADER SCROLL EFFECT */
+    window.addEventListener('scroll', () => {
+      const header = document.querySelector('.site-header');
+      if (window.scrollY > 50) {
+        header.style.background = 'rgba(10, 10, 15, 0.95)';
+      } else {
+        header.style.background = 'rgba(10, 10, 15, 0.8)';
+      }
+    });
+
+  </script>
+
+</body>
+
+</html>

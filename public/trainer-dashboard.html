@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Trainer Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        /* BACKGROUND */
+        body {
+            margin: 0;
+            font-family: Arial;
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: url("https://images.unsplash.com/photo-1571902943202-507ec2618e8f") no-repeat center center/cover;
+            background-size: cover;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .sidebar button {
+            width: 100%;
+            padding: 12px;
+            margin: 6px 0;
+            background: #222;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .sidebar button:hover {
+            background: #ff9800;
+        }
+
+        /* MAIN */
+        .main {
+            flex: 1;
+            min-width: 0;
+            width: calc(100vw - 280px);
+            padding: 20px;
+            overflow: auto;
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* SECTIONS */
+        .section {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        /* HEADER */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .back {
+            font-size: 28px;
+            cursor: pointer;
+        }
+
+        /* CARD */
+        .card {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #f4f4f4;
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 2px;
+        }
+
+        .add {
+            background: green;
+            color: white;
+        }
+
+        .send {
+            background: blue;
+            color: white;
+        }
+
+        /* PROFILE IMAGE */
+        img {
+            border-radius: 50%;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+
+        <h2>🏋️ TRAINER</h2>
+
+        <button onclick="openModule('home')">🏠 Home</button>
+        <button onclick="openModule('profile')">👤 Profile</button>
+        <button onclick="openModule('batch')">🏋️ My Batch</button>
+        <button onclick="openModule('members')">👥 Members</button>
+        <button onclick="openModule('schedule')">📅 Schedule</button>
+        <button onclick="openModule('notifications')">📩 Notifications</button>
+        <button onclick="openModule('feedback')">💬 Feedback</button>
+        <button onclick="logout()">🚪 Logout</button>
+
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <!-- HOME -->
+        <div id="home" class="section active">
+            <h1>Welcome Trainer 👋</h1>
+
+            <div class="card" id="homeInfo"></div>
+
+        </div>
+
+        <!-- PROFILE -->
+        <div id="profile" class="section">
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Profile</h2>
+            </div>
+
+            <div class="card">
+
+                <img id="preview" width="80" height="80">
+
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; width:80px;"><b>Name:</b></td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;" id="name"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Email:</b></td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;" id="email"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Phone:</b></td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;" id="phone"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Gender:</b></td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;" id="gender"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Role:</b></td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;" id="role"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Status:</b></td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;" id="status"></td>
+                    </tr>
+                </table>
+
+            </div>
+        </div>
+
+        <!-- BATCH -->
+        <div id="batch" class="section">
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>My Batch</h2>
+            </div>
+
+            <div class="card">
+                <p>Assigned Batch: Batch 1</p>
+                <p>Time: 6:00 - 7:30 AM</p>
+                <p>Capacity: 20 Members</p>
+            </div>
+
+        </div>
+
+        <!-- MEMBERS -->
+        <div id="members" class="section">
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Batch Members</h2>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="memberTable"></tbody>
+            </table>
+
+        </div>
+
+        <!-- SCHEDULE -->
+        <div id="schedule" class="section">
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Manage Schedule</h2>
+            </div>
+
+            <div class="card">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="padding: 8px;"><b>Monday:</b></td>
+                        <td><input id="sch-monday" placeholder="E.g. Chest" style="width:100%; padding:5px;"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;"><b>Tuesday:</b></td>
+                        <td><input id="sch-tuesday" placeholder="E.g. Back" style="width:100%; padding:5px;"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;"><b>Wednesday:</b></td>
+                        <td><input id="sch-wednesday" placeholder="E.g. Legs" style="width:100%; padding:5px;"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;"><b>Thursday:</b></td>
+                        <td><input id="sch-thursday" placeholder="E.g. Arms" style="width:100%; padding:5px;"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;"><b>Friday:</b></td>
+                        <td><input id="sch-friday" placeholder="E.g. Cardio" style="width:100%; padding:5px;"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;"><b>Saturday:</b></td>
+                        <td><input id="sch-saturday" placeholder="E.g. Rest" style="width:100%; padding:5px;"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;"><b>Sunday:</b></td>
+                        <td><input id="sch-sunday" placeholder="E.g. Rest" style="width:100%; padding:5px;"></td>
+                    </tr>
+                </table>
+                <button class="add" onclick="saveSchedule()" style="margin-top:15px; width:100%;">Save Schedule</button>
+            </div>
+
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div id="notifications" class="section">
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Notifications</h2>
+            </div>
+
+            <div class="card">
+                <textarea id="notifMsg" placeholder="Write message"></textarea>
+                <select id="notifTo">
+                    <option value="admin">Admin</option>
+                    <option value="batch">My Batch Members</option>
+                </select>
+                <button class="send" onclick="sendNotification()">Send</button>
+                <hr>
+                <div id="notifList"></div>
+            </div>
+        </div>
+
+        <!-- FEEDBACK -->
+        <div id="feedback" class="section">
+            <div class="header">
+                <span class="back" onclick="back()">←</span>
+                <h2>Feedback</h2>
+            </div>
+
+            <div class="card">
+                <h3>Send Feedback to Admin</h3>
+                <textarea id="fbMsg" placeholder="Write your feedback..."></textarea>
+                <button class="send" onclick="sendFeedback()">Send Feedback</button>
+            </div>
+
+            <div class="card">
+                <h3>My Feedback History</h3>
+                <div id="feedbackList"></div>
+            </div>
+
+            <div class="card">
+                <h3>Member Feedback (For Me)</h3>
+                <div id="memberFeedbackList"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        let history = [];
+
+        /* 🔑 SUPABASE SETUP */
+        const SUPABASE_URL = "https://obtagynscjhnihcslhns.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_AWEJbRPrIDWrNiG298HTlg_qMserpgr";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentUser = null;
+        let trainerProfile = null;
+
+        /* AUTH */
+        async function checkAuth() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                window.location.href = "login.html";
+                return;
+            }
+            currentUser = session.user;
+            await loadTrainerProfile();
+        }
+
+        async function loadTrainerProfile() {
+            // Fetch trainer data joined with profile
+            const { data: trainerData, error } = await supabaseClient
+                .from('trainers')
+                .select('*, profiles(*)')
+                .eq('id', currentUser.id)
+                .single();
+
+            if (trainerData) {
+                // Combine profile and trainer data
+                trainerProfile = { ...trainerData.profiles, ...trainerData };
+
+                document.getElementById("name").innerText = trainerProfile.full_name || 'N/A';
+                document.getElementById("phone").innerText = trainerProfile.phone || 'N/A';
+                document.getElementById("email").innerText = currentUser.email || 'N/A';
+                document.getElementById("gender").innerText = trainerProfile.gender || 'N/A';
+                document.getElementById("role").innerText = 'Trainer';
+
+                if (trainerProfile.photo_url) {
+                    document.getElementById("preview").src = trainerProfile.photo_url;
+                }
+
+                document.getElementById("status").innerHTML = trainerProfile.status === 'Pending' ? '<span style="color:orange; font-weight:bold;">Pending Approval</span>' : '<span style="color:green; font-weight:bold;">Active</span>';
+
+                document.getElementById("homeInfo").innerHTML = `
+            Status: ${trainerProfile.status === 'Pending' ? '<span style="color:orange; font-weight:bold;">Pending Approval</span>' : '<span style="color:green; font-weight:bold;">Active</span>'}
+        `;
+
+                const batchText = trainerProfile.batch || 'Unassigned';
+                let timeSlot = "Check Schedule";
+
+                if (trainerProfile.batch) {
+                    const { data: batchData } = await supabaseClient
+                        .from('batches')
+                        .select('time_slot')
+                        .eq('name', trainerProfile.batch)
+                        .single();
+                    if (batchData) timeSlot = batchData.time_slot || "N/A";
+                }
+
+                document.querySelector("#batch .card").innerHTML = `
+            <p>Assigned Batch: ${batchText}</p>
+            <p>Time: ${timeSlot}</p>
+        `;
+            }
+        }
+
+        /* NAVIGATION */
+        function openModule(id) {
+
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+
+            history.push(id);
+            if (id === 'members') loadMembers();
+            if (id === 'schedule') loadSchedule();
+            if (id === 'feedback') loadFeedback();
+            if (id === 'notifications') loadNotifications();
+        }
+
+        function back() {
+            history.pop();
+            let last = history[history.length - 1] || "home";
+
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(last).classList.add('active');
+        }
+
+
+        /* LOAD MEMBERS */
+        async function loadMembers() {
+            let table = document.getElementById("memberTable");
+            table.innerHTML = "";
+
+            if (!trainerProfile) {
+                table.innerHTML = "<tr><td colspan='3'>Loading...</td></tr>";
+                return;
+            }
+
+            if (!trainerProfile.batch) {
+                table.innerHTML = "<tr><td colspan='3'>No batch assigned</td></tr>";
+                return;
+            }
+
+            const { data: memberMeta, error: memErr } = await supabaseClient
+                .from('members')
+                .select('id, batch, plan, expiry_date')
+                .eq('batch', trainerProfile.batch);
+
+            if (memErr) {
+                console.error('Error loading members by batch:', memErr);
+                table.innerHTML = "<tr><td colspan='3'>Unable to load members</td></tr>";
+                return;
+            }
+
+            const memberIds = memberMeta ? memberMeta.map(m => m.id) : [];
+            if (!memberIds.length) {
+                table.innerHTML = "<tr><td colspan='3'>No members assigned</td></tr>";
+                return;
+            }
+
+            let { data: profiles, error: profErr } = await supabaseClient
+                .from('profiles')
+                .select('id, full_name, phone, status')
+                .in('id', memberIds)
+                .eq('role', 'member');
+
+            if ((!profiles || profiles.length === 0) && !profErr) {
+                const fallback = await supabaseClient
+                    .from('profiles')
+                    .select('id, full_name, phone, status')
+                    .in('id', memberIds)
+                    .neq('role', 'trainer')
+                    .neq('role', 'admin');
+                if (fallback.data) profiles = fallback.data;
+                if (fallback.error) console.warn('Fallback member profile lookup failed:', fallback.error);
+            }
+
+            if (profErr) {
+                console.error('Error loading profile details for members:', profErr);
+                table.innerHTML = "<tr><td colspan='3'>Unable to load members</td></tr>";
+                return;
+            }
+
+            const profileMap = {};
+            if (profiles) {
+                profiles.forEach(p => {
+                    profileMap[p.id] = p;
+                });
+            }
+
+            memberMeta.forEach(m => {
+                const profile = profileMap[m.id] || {};
+                table.innerHTML += `
+            <tr>
+            <td>${profile.full_name || 'Unknown'}</td>
+            <td>${profile.phone || 'N/A'}</td>
+            <td>${profile.status || 'Active'}</td>
+            </tr>
+            `;
+            });
+        }
+
+        /* SCHEDULE */
+        async function loadSchedule() {
+            if (!trainerProfile) return;
+
+            if (!trainerProfile.batch) {
+                alert("You don't have a batch assignment yet. Please ask admin to assign you to a batch.");
+                return;
+            }
+
+            const { data, error } = await supabaseClient
+                .from('schedules')
+                .select('*')
+                .eq('batch', trainerProfile.batch)
+                .single();
+
+            if (error && !data) {
+                console.warn('Schedule load error:', error);
+            }
+
+            document.getElementById("sch-monday").value = data?.monday || "";
+            document.getElementById("sch-tuesday").value = data?.tuesday || "";
+            document.getElementById("sch-wednesday").value = data?.wednesday || "";
+            document.getElementById("sch-thursday").value = data?.thursday || "";
+            document.getElementById("sch-friday").value = data?.friday || "";
+            document.getElementById("sch-saturday").value = data?.saturday || "";
+            document.getElementById("sch-sunday").value = data?.sunday || "";
+
+            if (!data) {
+                alert('No schedule found yet for your batch. Use the form to create one.');
+            }
+        }
+
+        async function saveSchedule() {
+            if (!trainerProfile || !trainerProfile.batch) {
+                alert("You must be assigned to a batch to save a schedule.");
+                return;
+            }
+
+            const payload = {
+                batch: trainerProfile.batch,
+                trainer_id: currentUser.id,
+                monday: document.getElementById("sch-monday").value,
+                tuesday: document.getElementById("sch-tuesday").value,
+                wednesday: document.getElementById("sch-wednesday").value,
+                thursday: document.getElementById("sch-thursday").value,
+                friday: document.getElementById("sch-friday").value,
+                saturday: document.getElementById("sch-saturday").value,
+                sunday: document.getElementById("sch-sunday").value,
+                updated_at: new Date().toISOString()
+            };
+
+            const { error } = await supabaseClient
+                .from('schedules')
+                .upsert(payload, { onConflict: 'batch' });
+
+            if (error) {
+                alert("Error saving schedule: " + error.message);
+            } else {
+                alert("Schedule Saved Successfully!");
+            }
+        }
+
+        /* NOTIFICATIONS */
+        async function sendNotification() {
+            let msg = document.getElementById("notifMsg").value;
+            let to = document.getElementById("notifTo").value;
+
+            if (!msg.trim()) return alert("Enter message");
+
+            const payload = {
+                sender_id: currentUser.id,
+                message: msg,
+                type: 'from_trainer',
+                receiver_role: to === 'admin' ? 'admin' : 'member',
+                batch: to === 'batch' ? trainerProfile.batch : null
+            };
+
+            const { error } = await supabaseClient.from('notifications').insert([payload]);
+
+            if (error) alert("Error: " + error.message);
+            else {
+                alert("Notification Sent!");
+                document.getElementById("notifMsg").value = "";
+                loadNotifications();
+            }
+        }
+
+        async function loadNotifications() {
+            const { data, error } = await supabaseClient
+                .from('notifications')
+                .select('*, profiles!sender_id(full_name)')
+                .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id},receiver_role.eq.trainer,receiver_role.is.null`)
+                .order('created_at', { ascending: false });
+
+            if (data) {
+                let html = '';
+                data.forEach(n => {
+                    let sender = n.profiles ? n.profiles.full_name : 'System';
+                    let label = n.sender_id === currentUser.id ? 'You sent' : `From ${sender}`;
+                    html += `<p><b>${label}:</b> ${n.message} <br><small>${new Date(n.created_at).toLocaleString()}</small></p><hr>`;
+                });
+                document.getElementById("notifList").innerHTML = html || "No notifications";
+            }
+        }
+
+        /* FEEDBACK */
+        async function sendFeedback() {
+            let msg = document.getElementById("fbMsg").value;
+            if (!msg.trim()) return alert("Enter feedback");
+
+            const { error } = await supabaseClient.from('feedback').insert([{
+                user_id: currentUser.id,
+                message: msg,
+                to_whom: 'admin'
+            }]);
+
+            if (error) alert("Error: " + error.message);
+            else {
+                alert("Feedback Sent!");
+                document.getElementById("fbMsg").value = "";
+                loadFeedback();
+            }
+        }
+
+        async function loadFeedback() {
+            // My feedback to admin
+            const { data: myFB } = await supabaseClient
+                .from('feedback')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .order('created_at', { ascending: false });
+
+            let myHtml = '';
+            if (myFB) {
+                myFB.forEach(f => {
+                    myHtml += `<p>${f.message} <br><small>${new Date(f.created_at).toLocaleDateString()}</small></p><hr>`;
+                });
+            }
+            document.getElementById("feedbackList").innerHTML = myHtml || "No feedback sent yet";
+
+            // Feedback from members for me
+            const { data: memberFB } = await supabaseClient
+                .from('feedback')
+                .select('*, profiles(full_name)')
+                .eq('to_whom', 'trainer')
+                .order('created_at', { ascending: false });
+
+            let mHtml = '';
+            if (memberFB) {
+                memberFB.forEach(f => {
+                    mHtml += `<p><b>${f.profiles ? f.profiles.full_name : 'Member'}:</b> ${f.message} <br><small>${new Date(f.created_at).toLocaleDateString()}</small></p><hr>`;
+                });
+            }
+            document.getElementById("memberFeedbackList").innerHTML = mHtml || "No member feedback yet";
+        }
+
+        /* LOGOUT */
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            window.location = "login.html";
+        }
+
+        /* INIT */
+        checkAuth();
+
+    </script>
+
+</body>
+
+</html>
